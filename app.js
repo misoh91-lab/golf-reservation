@@ -1,5 +1,5 @@
 // ⚠️ Apps Script URL (이미 연결됨)
-const API_URL = "https://script.google.com/macros/s/AKfycbySjCPtVMkwSQPxHlKmxNLQ7cnkb1EVhjaitXMwywTDq4i3hUFvzyj-47AkDIDZIqBW/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwU3cO4SzctOIZNbCQKpfJqB87IaSJMO4JjaZmq6kFLA5U6GRWG6rQrLEy5Gl25oQEO/exec";
 const ADMIN_PASSWORD = "golf1234"; // 원하시면 변경하세요
 const COURSES = ["코리아", "아메리카", "재팬"];
 const COURSE_COLORS = { "코리아": "#1a5c2e", "아메리카": "#1a3a6e", "재팬": "#8b1a1a" };
