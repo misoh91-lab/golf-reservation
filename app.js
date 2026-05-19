@@ -1,9 +1,9 @@
 // ⚠️ Apps Script URL (이미 연결됨)
 const API_URL = "https://script.google.com/macros/s/AKfycbw3m_OuOCSI6c0Bn4ubbofB99oICIRnhTdQ8yjwjJqyDUkR20PpyBkTcHhvi_cvzK6o/exec";
 const ADMIN_PASSWORD = "golf1234"; // 원하시면 변경하세요
-const COURSES = ["코리아", "아메리카", "재팬"];
-const COURSE_COLORS = { "코리아": "#1a5c2e", "아메리카": "#1a3a6e", "재팬": "#8b1a1a" };
-const COURSE_BG    = { "코리아": "#e8f5e0", "아메리카": "#e3ecfa", "재팬": "#faeaea" };
+const COURSES = ["코리아", "크리스탈밸리", "설해원"];
+const COURSE_COLORS = { "코리아": "#1a5c2e", "크리스탈밸리": "#1a3a6e", "설해원": "#8b1a1a" };
+const COURSE_BG    = { "코리아": "#e8f5e0", "크리스탈밸리": "#e3ecfa", "설해원": "#faeaea" };
 const STATUS = {
   pending:   { label: "대기중", color: "#b87d00", bg: "#fff8e1" },
   confirmed: { label: "확정",   color: "#1a6e3a", bg: "#e8f5e9" },
@@ -267,8 +267,8 @@ function App() {
             <p style={{fontSize:12,fontWeight:700,color:"#1a4a1a",margin:"0 0 8px"}}>⛳ 골프장별 예약 확정일<br/><span style={{fontSize:10,fontWeight:400,color:"#6a8e61"}}>(이용일 기준)</span></p>
             {[
               ["코리아CC","#1a5c2e","#e8f5e0","전월 20일 확정"],
-              ["아메리카","#1a3a6e","#e3ecfa","전월 2주차 화요일 확정"],
-              ["재팬","#8b1a1a","#faeaea","전월 1주차 내 확정"],
+              ["크리스탈밸리","#1a3a6e","#e3ecfa","전월 2주차 화요일 확정"],
+              ["설해원","#8b1a1a","#faeaea","전월 1주차 내 확정"],
             ].map(([name,color,bg,desc])=>(
               <div key={name} style={{display:"flex",flexDirection:"column",background:bg,borderRadius:8,padding:"6px 9px",marginBottom:5}}>
                 <span style={{fontSize:11,fontWeight:700,color}}>{name}</span>
