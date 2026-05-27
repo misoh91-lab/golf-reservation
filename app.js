@@ -173,7 +173,7 @@ function App() {
     <div style={{minHeight:480,background:"linear-gradient(160deg,#e8f5e0 0%,#f0f7eb 100%)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem 1rem"}}>
       <div style={{fontSize:48,marginBottom:8}}>⛳</div>
       <h1 style={{fontSize:26,fontWeight:700,color:"#1a4a1a",margin:"0 0 6px"}}>SK스퀘어 골프예약 신청</h1>
-      <p style={{color:"#4a6741",fontSize:15,margin:"0 0 10px",textAlign:"center"}}>임원 전용 예약신청 페이지입니다.</p>
+      <p style={{color:"#4a6741",fontSize:15,margin:"0 0 10px",textAlign:"center"}}>임원(비서)전용 예약신청 페이지입니다.</p>
       <div style={{display:"flex",gap:8,marginBottom:28}}>
         {COURSES.map(c=><span key={c} style={{fontSize:12,padding:"3px 12px",borderRadius:20,background:COURSE_BG[c],color:COURSE_COLORS[c],fontWeight:600}}>{c}</span>)}
       </div>
