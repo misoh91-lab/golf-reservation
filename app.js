@@ -218,7 +218,11 @@ function App() {
                 onChange={e=>{
                   const d=e.target.value;
                   setF("date",d);
-                  const conflicts=reservations.filter(r=>r.date===d&&r.status!=="cancelled");
+                  // 날짜 앞 10자리만 비교 (형식 차이 대응)
+                  const conflicts=reservations.filter(r=>
+                    r.status!=="cancelled" &&
+                    String(r.date).slice(0,10)===d.slice(0,10)
+                  );
                   if(conflicts.length>0) setDateConflict(conflicts.length);
                   else setDateConflict(null);
                 }} style={inputStyle(errors.date)}/>
