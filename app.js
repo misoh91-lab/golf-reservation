@@ -307,7 +307,7 @@ function App() {
             <p style={{fontSize:12,fontWeight:700,color:"#1a2e6e",margin:"0 0 6px"}}>📞 문의처 / 담당자</p>
             <p style={{fontSize:11,color:"#2a3a6e",lineHeight:1.7,margin:0}}>
               HR <strong>홍미소</strong><br/>
-              <a href="tel:010-1234-4567" style={{color:"#1a3a6e",textDecoration:"none",fontWeight:600}}>010-1234-4567</a>
+              <a href="tel:010-2101-6313" style={{color:"#1a3a6e",textDecoration:"none",fontWeight:600}}>010-1234-4567</a>
             </p>
           </div>
         </div>
