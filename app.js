@@ -95,7 +95,8 @@ function App() {
   const [reservations, setReservations] = React.useState([]);
   const [form, setForm] = React.useState({name:"",dept:"",date:"",time:"",course:"",note:"",pw:"",pwConfirm:""});
   const [errors, setErrors] = React.useState({});
-  const [courseNotice, setCourseNotice] = React.useState(null); // ✅ 팝업 상태
+  const [courseNotice, setCourseNotice] = React.useState(null);
+  const [dateConflict, setDateConflict] = React.useState(null); // 날짜 중복 팝업
   const [lookupName, setLookupName] = React.useState("");
   const [lookupPw,   setLookupPw]   = React.useState("");
   const [lookupError, setLookupError] = React.useState("");
@@ -213,7 +214,14 @@ function App() {
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
             <div>
               <label style={labelStyle}>날짜</label>
-              <input type="date" value={form.date} min={new Date().toISOString().split("T")[0]} onChange={e=>setF("date",e.target.value)} style={inputStyle(errors.date)}/>
+              <input type="date" value={form.date} min={new Date().toISOString().split("T")[0]}
+                onChange={e=>{
+                  const d=e.target.value;
+                  setF("date",d);
+                  const conflicts=reservations.filter(r=>r.date===d&&r.status!=="cancelled");
+                  if(conflicts.length>0) setDateConflict(conflicts.length);
+                  else setDateConflict(null);
+                }} style={inputStyle(errors.date)}/>
               {errors.date&&<p style={errStyle}>{errors.date}</p>}
             </div>
             <div>
@@ -297,7 +305,22 @@ function App() {
         </div>
       </div>
 
-      {/* ✅ 골프장별 팝업 */}
+      {/* 날짜 중복 팝업 */}
+      {dateConflict&&(
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.35)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999}}
+          onClick={()=>setDateConflict(null)}>
+          <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:14,padding:"2rem 1.8rem",maxWidth:300,width:"90%",boxSizing:"border-box",border:"1px solid #ffe082",textAlign:"center"}}>
+            <div style={{fontSize:36,marginBottom:10}}>⚠️</div>
+            <h3 style={{fontSize:15,fontWeight:700,color:"#b87d00",margin:"0 0 10px"}}>동일 날짜 신청 안내</h3>
+            <p style={{fontSize:14,color:"#7a5c00",lineHeight:1.75,margin:"0 0 20px",background:"#fff8e1",borderRadius:9,padding:"12px 14px",border:"1px solid #ffe082"}}>
+              동일한 날짜에 <strong>{dateConflict}명</strong>의 신청건이 있습니다.
+            </p>
+            <button onClick={()=>setDateConflict(null)} style={{...btnPrimary,width:"auto",padding:"10px 28px",background:"#e6a817"}}>확인</button>
+          </div>
+        </div>
+      )}
+
+      {/* 골프장별 팝업 */}
       {courseNotice&&(
         <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.35)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999}}
           onClick={()=>setCourseNotice(null)}>
@@ -320,7 +343,7 @@ function App() {
         <div style={{fontSize:50,marginBottom:10}}>✅</div>
         <h2 style={{fontSize:21,fontWeight:700,color:"#1a4a1a",margin:"0 0 10px"}}>예약 신청이 완료되었습니다!</h2>
         <p style={{color:"#4a6741",fontSize:14,lineHeight:1.7,margin:"0 0 6px"}}>담당자 확인 후 순차적으로 안내 드리겠습니다.</p>
-        <p style={{color:"#6a8e61",fontSize:13,margin:"0 0 18px"}}>예약 확정까지 1~2 영업일이 소요될 수 있습니다.</p>
+
         <div style={{background:"#fff",border:"1px solid #c8e0be",borderRadius:10,padding:"1rem",textAlign:"left",marginBottom:16,fontSize:14}}>
           {[["이름",form.name],["부서명",form.dept],["골프장",form.course],["날짜",form.date],["시간",form.time]].map(([k,v])=>(
             <div key={k} style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
@@ -406,7 +429,7 @@ function App() {
           style={inputStyle(!!adminError)}/>
         {adminError&&<p style={errStyle}>{adminError}</p>}
         <button onClick={()=>{if(adminPw===ADMIN_PASSWORD)setPage("admin");else setAdminError("비밀번호가 올바르지 않습니다.");}} style={{...btnPrimary,marginTop:12}}>로그인</button>
-        <p style={{textAlign:"center",fontSize:11,color:"#9ab890",marginTop:10}}>힌트: golf1234</p>
+
       </div>
     </div>
   );
@@ -415,7 +438,22 @@ function App() {
     <div style={{padding:"1.2rem 1rem",maxWidth:760,margin:"0 auto"}}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14,flexWrap:"wrap",gap:8}}>
         <h2 style={{fontSize:19,fontWeight:700,color:"#1a4a1a",margin:0}}>⛳ 예약 관리</h2>
-        <button onClick={()=>{setPage("home");setAdminPw("");}} style={{padding:"7px 14px",background:"none",border:"1px solid #c8e0be",borderRadius:8,color:"#4a6741",fontSize:13,cursor:"pointer"}}>로그아웃</button>
+        <div style={{display:"flex",gap:8}}>
+          <button onClick={()=>{
+            const header=["ID","이름","부서","날짜","시간","골프장","요청사항","상태","신청일"];
+            const rows=reservations.map(r=>[r.id,r.name,r.dept,r.date,r.time,r.course,r.note||"",STATUS[r.status]?.label||r.status,r.created_at||""]);
+            const csv=[header,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
+            const bom="\uFEFF";
+            const blob=new Blob([bom+csv],{type:"text/csv;charset=utf-8;"});
+            const url=URL.createObjectURL(blob);
+            const a=document.createElement("a");
+            a.href=url; a.download="골프예약목록.csv"; a.click();
+            URL.revokeObjectURL(url);
+          }} style={{padding:"7px 14px",background:"#e8f5e9",color:"#1a6e3a",border:"1px solid #a5d6a7",borderRadius:8,fontSize:13,cursor:"pointer",fontWeight:500}}>
+            📥 엑셀 다운로드
+          </button>
+          <button onClick={()=>{setPage("home");setAdminPw("");}} style={{padding:"7px 14px",background:"none",border:"1px solid #c8e0be",borderRadius:8,color:"#4a6741",fontSize:13,cursor:"pointer"}}>로그아웃</button>
+        </div>
       </div>
       <div style={{display:"flex",gap:14,alignItems:"flex-start",flexWrap:"wrap"}}>
         <div style={{flex:1,minWidth:280}}>
