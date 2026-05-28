@@ -534,7 +534,17 @@ function App() {
               <span style={{fontSize:12,padding:"2px 10px",borderRadius:10,background:COURSE_BG[r.course],color:COURSE_COLORS[r.course],fontWeight:700}}>{r.course}</span>
               <span style={{fontSize:12,fontWeight:600,padding:"3px 10px",borderRadius:20,background:STATUS[r.status].bg,color:STATUS[r.status].color}}>{STATUS[r.status].label}</span>
             </div>
-            <div style={{fontSize:14,color:"#4a6741",display:"flex",gap:16}}><span>📅 {r.date}</span><span>🕐 {r.time}</span></div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:8}}>
+              <div style={{background:"#eaf4e4",borderRadius:7,padding:"6px 10px",fontSize:12}}>
+                <div style={{color:"#2e6b2e",fontWeight:600,marginBottom:2}}>👤 신청자</div>
+                <div style={{color:"#1a4a1a"}}>{r.empName||r.name} <span style={{color:"#6a8e61"}}>({r.dept})</span></div>
+              </div>
+              <div style={{background:"#e8eefa",borderRadius:7,padding:"6px 10px",fontSize:12}}>
+                <div style={{color:"#1a3a6e",fontWeight:600,marginBottom:2}}>👑 이용자</div>
+                <div style={{color:"#1a3a6e"}}>{r.userEmpName||"-"} <span style={{color:"#6a8e61"}}>({r.userDept||"-"})</span></div>
+              </div>
+            </div>
+            <div style={{fontSize:13,color:"#4a6741",display:"flex",gap:16}}><span>📅 {r.date}</span><span>🕐 {r.time}</span></div>
             {r.note&&<div style={{marginTop:6,fontSize:12,color:"#7a9e71",background:"#f3f9ef",borderRadius:6,padding:"5px 9px"}}>📝 {r.note}</div>}
           </div>
         ))}
@@ -612,13 +622,23 @@ function App() {
               <div key={r.id} style={{background:"#fff",border:"1px solid #c8e0be",borderRadius:11,padding:"0.9rem 1.1rem"}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:6}}>
                   <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-                    <span style={{fontWeight:700,fontSize:15,color:"#1a4a1a"}}>{r.name}</span>
-                    <span style={{fontSize:12,color:"#6a8e61",background:"#f3f9ef",padding:"2px 8px",borderRadius:10}}>{r.dept}</span>
                     <span style={{fontSize:11,padding:"2px 8px",borderRadius:10,background:COURSE_BG[r.course],color:COURSE_COLORS[r.course],fontWeight:600}}>{r.course}</span>
                   </div>
                   <span style={{fontSize:11,fontWeight:600,padding:"3px 9px",borderRadius:20,background:STATUS[r.status].bg,color:STATUS[r.status].color}}>{STATUS[r.status].label}</span>
                 </div>
-                <div style={{marginTop:6,fontSize:13,color:"#4a6741",display:"flex",gap:12,flexWrap:"wrap"}}>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginTop:8,marginBottom:6}}>
+                  <div style={{background:"#eaf4e4",borderRadius:7,padding:"6px 10px",fontSize:12}}>
+                    <div style={{color:"#2e6b2e",fontWeight:600,marginBottom:2}}>👤 신청자</div>
+                    <div style={{color:"#1a4a1a"}}>{r.empName||r.name}</div>
+                    <div style={{color:"#6a8e61",fontSize:11}}>{r.dept}</div>
+                  </div>
+                  <div style={{background:"#e8eefa",borderRadius:7,padding:"6px 10px",fontSize:12}}>
+                    <div style={{color:"#1a3a6e",fontWeight:600,marginBottom:2}}>👑 이용자</div>
+                    <div style={{color:"#1a3a6e"}}>{r.userEmpName||"-"}</div>
+                    <div style={{color:"#6a8e61",fontSize:11}}>{r.userDept||"-"}</div>
+                  </div>
+                </div>
+                <div style={{marginTop:4,fontSize:13,color:"#4a6741",display:"flex",gap:12,flexWrap:"wrap"}}>
                   <span>📅 {r.date}</span><span>🕐 {r.time}</span>
                 </div>
                 {r.note&&<div style={{marginTop:5,fontSize:12,color:"#7a9e71",background:"#f3f9ef",borderRadius:6,padding:"5px 9px"}}>📝 {r.note}</div>}
