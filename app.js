@@ -1,5 +1,5 @@
 // ⚠️ Apps Script URL (이미 연결됨)
-const API_URL = "https://script.google.com/macros/s/AKfycbw3m_OuOCSI6c0Bn4ubbofB99oICIRnhTdQ8yjwjJqyDUkR20PpyBkTcHhvi_cvzK6o/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyIKYkowi4sI83R3wJjjHU1rwlEj9n8ZfusXxiv8Lym4iPc8jgkcuJQI9daRm4RWTx7/exec";
 const ADMIN_PASSWORD = "golf1234";
 const COURSES = ["코리아", "크리스탈밸리", "설해원"];
 const COURSE_COLORS = { "코리아": "#1a5c2e", "크리스탈밸리": "#1a3a6e", "설해원": "#8b1a1a" };
@@ -154,7 +154,9 @@ function App() {
 
   const handleLookup = () => {
     if(!lookupName.trim()||!lookupPw.trim()){setLookupError("이름과 비밀번호를 입력해주세요.");return;}
-    const found=reservations.filter(r=>r.name===lookupName.trim()&&r.pw===lookupPw.trim());
+    const found=reservations.filter(r=>
+      r.name===lookupName.trim() && String(r.pw)===String(lookupPw.trim())
+    );
     if(found.length===0){setLookupError("일치하는 예약 정보가 없습니다.");return;}
     setMyRes(found); setPage("myReservation");
   };
@@ -318,6 +320,7 @@ function App() {
         <div style={{fontSize:50,marginBottom:10}}>✅</div>
         <h2 style={{fontSize:21,fontWeight:700,color:"#1a4a1a",margin:"0 0 10px"}}>예약 신청이 완료되었습니다!</h2>
         <p style={{color:"#4a6741",fontSize:14,lineHeight:1.7,margin:"0 0 6px"}}>담당자 확인 후 순차적으로 안내 드리겠습니다.</p>
+        <p style={{color:"#6a8e61",fontSize:13,margin:"0 0 18px"}}>예약 확정까지 1~2 영업일이 소요될 수 있습니다.</p>
         <div style={{background:"#fff",border:"1px solid #c8e0be",borderRadius:10,padding:"1rem",textAlign:"left",marginBottom:16,fontSize:14}}>
           {[["이름",form.name],["부서명",form.dept],["골프장",form.course],["날짜",form.date],["시간",form.time]].map(([k,v])=>(
             <div key={k} style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
