@@ -120,6 +120,16 @@ function App() {
     })();
   }, []);
 
+  const checkDateConflict = (d) => {
+    const conflicts = reservations.filter(r => {
+      if(r.status==="cancelled") return false;
+      const rd = String(r.date||"").replace(/^'/,"").substring(0,10);
+      return rd === d;
+    });
+    if(conflicts.length > 0) setDateConflict(conflicts.length);
+    else setDateConflict(null);
+  };
+
   const setF = (k,v) => { setForm(f=>({...f,[k]:v})); setErrors(e=>({...e,[k]:""})); };
 
   const validate = () => {
@@ -216,17 +226,9 @@ function App() {
               <label style={labelStyle}>날짜</label>
               <input type="date" value={form.date} min={new Date().toISOString().split("T")[0]}
                 onChange={e=>{
-                  const d=e.target.value; // "2026-05-29"
+                  const d=e.target.value;
                   setF("date",d);
-                  const conflicts=reservations.filter(r=>{
-                    if(r.status==="cancelled") return false;
-                    const rd=String(r.date||"");
-                    // T가 있으면 UTC 날짜 앞 10자리, 없으면 그대로
-                    const rDate=rd.includes("T")?rd.substring(0,10):rd.replace(/'/g,"").substring(0,10);
-                    return rDate===d;
-                  });
-                  if(conflicts.length>0) setDateConflict(conflicts.length);
-                  else setDateConflict(null);
+                  checkDateConflict(d);
                 }} style={inputStyle(errors.date)}/>
               {errors.date&&<p style={errStyle}>{errors.date}</p>}
             </div>
@@ -280,7 +282,7 @@ function App() {
 
         {/* 달력 + 안내문구 */}
         <div style={{display:"flex",flexDirection:"column",gap:10,minWidth:200,maxWidth:220}}>
-          <MiniCalendar reservations={reservations} selectedDate={form.date} onSelect={d=>setF("date",d)}/>
+          <MiniCalendar reservations={reservations} selectedDate={form.date} onSelect={d=>{ setF("date",d); checkDateConflict(d); }}/>
           <div style={{background:"#fff8e1",border:"1px solid #ffe082",borderRadius:12,padding:"12px 14px"}}>
             <p style={{fontSize:12,fontWeight:700,color:"#b87d00",margin:"0 0 6px"}}>⚠️ 예약 주의사항</p>
             <p style={{fontSize:11,color:"#7a5c00",lineHeight:1.65,margin:0}}>
