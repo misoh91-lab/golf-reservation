@@ -318,7 +318,6 @@ function App() {
         <div style={{fontSize:50,marginBottom:10}}>✅</div>
         <h2 style={{fontSize:21,fontWeight:700,color:"#1a4a1a",margin:"0 0 10px"}}>예약 신청이 완료되었습니다!</h2>
         <p style={{color:"#4a6741",fontSize:14,lineHeight:1.7,margin:"0 0 6px"}}>담당자 확인 후 순차적으로 안내 드리겠습니다.</p>
-        <p style={{color:"#6a8e61",fontSize:13,margin:"0 0 18px"}}>예약 확정까지 1~2 영업일이 소요될 수 있습니다.</p>
         <div style={{background:"#fff",border:"1px solid #c8e0be",borderRadius:10,padding:"1rem",textAlign:"left",marginBottom:16,fontSize:14}}>
           {[["이름",form.name],["부서명",form.dept],["골프장",form.course],["날짜",form.date],["시간",form.time]].map(([k,v])=>(
             <div key={k} style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
