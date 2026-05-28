@@ -1,5 +1,5 @@
 // ⚠️ Apps Script URL (이미 연결됨)
-const API_URL = "https://script.google.com/macros/s/AKfycbyIKYkowi4sI83R3wJjjHU1rwlEj9n8ZfusXxiv8Lym4iPc8jgkcuJQI9daRm4RWTx7/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxpaUlMLarQpZgnWiLWO4YWD223sUOXqm6h3mBoNaIEvF26sibnik774RSp0mTM8g5o/exec";
 const ADMIN_PASSWORD = "golf1234";
 const COURSES = ["코리아", "크리스탈밸리", "설해원"];
 const COURSE_COLORS = { "코리아": "#1a5c2e", "크리스탈밸리": "#1a3a6e", "설해원": "#8b1a1a" };
@@ -216,13 +216,15 @@ function App() {
               <label style={labelStyle}>날짜</label>
               <input type="date" value={form.date} min={new Date().toISOString().split("T")[0]}
                 onChange={e=>{
-                  const d=e.target.value;
+                  const d=e.target.value; // "2026-05-29"
                   setF("date",d);
-                  // 날짜 앞 10자리만 비교 (형식 차이 대응)
-                  const conflicts=reservations.filter(r=>
-                    r.status!=="cancelled" &&
-                    String(r.date).slice(0,10)===d.slice(0,10)
-                  );
+                  const conflicts=reservations.filter(r=>{
+                    if(r.status==="cancelled") return false;
+                    const rd=String(r.date||"");
+                    // T가 있으면 UTC 날짜 앞 10자리, 없으면 그대로
+                    const rDate=rd.includes("T")?rd.substring(0,10):rd.replace(/'/g,"").substring(0,10);
+                    return rDate===d;
+                  });
                   if(conflicts.length>0) setDateConflict(conflicts.length);
                   else setDateConflict(null);
                 }} style={inputStyle(errors.date)}/>
