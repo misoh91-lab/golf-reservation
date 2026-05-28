@@ -1,11 +1,17 @@
 // ⚠️ Apps Script URL (이미 연결됨)
-const API_URL = "https://script.google.com/macros/s/AKfycbxpaUlMLarQpZgnWiLWO4YWD223sUOXqm6h3mBoNaIEvF26sibnik774RSp0mTM8g5o/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxh4SIrlR2O6vZfTxcenmUDRZkSS1B1hpEu5TCjj758UcVkeFxKqbeP-7BI1leq4ff5/exec";
 const ADMIN_PASSWORD = "golf1234";
 const COURSES = ["코리아", "크리스탈밸리", "설해원"];
 const COURSE_COLORS = { "코리아": "#1a5c2e", "크리스탈밸리": "#1a3a6e", "설해원": "#8b1a1a" };
 const COURSE_BG    = { "코리아": "#e8f5e0", "크리스탈밸리": "#e3ecfa", "설해원": "#faeaea" };
 
 // ✅ 골프장별 팝업 안내 내용
+const COURSE_URLS = {
+  "코리아":      "https://www.gakorea.com/index.asp",
+  "크리스탈밸리": "https://www.crystalvalley.co.kr/index.asp",
+  "설해원":      "https://www.seolhaeone.com/member/login_new.do?redirect=/reservation/golf-day_new.do",
+};
+
 const COURSE_NOTICES = {
   "코리아":      { title: "코리아CC 예약 안내",    msg: "코리아CC의 경우 예약신청일 전월 20일에 확정 여부 확인 가능합니다." },
   "크리스탈밸리": { title: "크리스탈밸리 예약 안내", msg: "크리스탈밸리의 경우 예약신청일 전월 2주차 화요일에 확정 여부 확인 가능합니다." },
@@ -93,11 +99,21 @@ function App() {
   const [saving,  setSaving]  = React.useState(false);
   const [page, setPage] = React.useState("home");
   const [reservations, setReservations] = React.useState([]);
-  const [form, setForm] = React.useState({name:"",dept:"",date:"",time:"",course:"",note:"",pw:"",pwConfirm:""});
+  const [form, setForm] = React.useState({
+    empId:"", name:"", dept:"",           // 신청자
+    userEmpId:"", userEmpName:"", userDept:"", // 이용자(임원)
+    date:"", time:"", course:"", note:"", pw:"", pwConfirm:""
+  });
+  const [empLoading, setEmpLoading] = React.useState(false);
+  const [userEmpLoading, setUserEmpLoading] = React.useState(false);
   const [errors, setErrors] = React.useState({});
   const [courseNotice, setCourseNotice] = React.useState(null);
   const [dateConflict, setDateConflict] = React.useState(null); // 날짜 중복 팝업
+  // 내 예약 확인용 사번 조회
+  const [lookupEmpId, setLookupEmpId] = React.useState("");
   const [lookupName, setLookupName] = React.useState("");
+  const [lookupDept, setLookupDept] = React.useState("");
+  const [lookupEmpLoading, setLookupEmpLoading] = React.useState(false);
   const [lookupPw,   setLookupPw]   = React.useState("");
   const [lookupError, setLookupError] = React.useState("");
   const [myRes, setMyRes] = React.useState(null);
@@ -120,6 +136,28 @@ function App() {
     })();
   }, []);
 
+  // 사번으로 직원 조회
+  const fetchEmployee = async (empId, type) => {
+    if(!empId.trim()) return;
+    type==="user" ? setUserEmpLoading(true) : setEmpLoading(true);
+    try {
+      const res = await fetch(`${API_URL}?action=getEmployee&empId=${empId}`);
+      const data = await res.json();
+      if(data.success) {
+        if(type==="user") {
+          setForm(f=>({...f, userEmpName:data.name, userDept:data.dept}));
+        } else {
+          setForm(f=>({...f, name:data.name, dept:data.dept}));
+        }
+      } else {
+        if(type==="user") setForm(f=>({...f, userEmpName:"", userDept:""}));
+        else setForm(f=>({...f, name:"", dept:""}));
+        alert(data.error || "사번을 찾을 수 없습니다.");
+      }
+    } catch(e) { console.error(e); }
+    type==="user" ? setUserEmpLoading(false) : setEmpLoading(false);
+  };
+
   const checkDateConflict = (d) => {
     const conflicts = reservations.filter(r => {
       if(r.status==="cancelled") return false;
@@ -134,12 +172,14 @@ function App() {
 
   const validate = () => {
     const e={};
-    if(!form.name.trim())  e.name="이름을 입력해주세요.";
-    if(!form.dept.trim())  e.dept="부서명을 입력해주세요.";
-    if(!form.date)         e.date="날짜를 선택해주세요.";
-    if(!form.time)         e.time="시간을 선택해주세요.";
-    if(!form.course)       e.course="골프장을 선택해주세요.";
-    if(form.pw.length<4)   e.pw="비밀번호 4자리 이상 입력해주세요.";
+    if(!form.empId.trim())      e.empId="신청자 사번을 입력해주세요.";
+    if(!form.name.trim())       e.name="사번 조회를 해주세요.";
+    if(!form.userEmpId.trim())  e.userEmpId="이용자 사번을 입력해주세요.";
+    if(!form.userEmpName.trim()) e.userEmpName="사번 조회를 해주세요.";
+    if(!form.date)              e.date="날짜를 선택해주세요.";
+    if(!form.time)              e.time="시간을 선택해주세요.";
+    if(!form.course)            e.course="골프장을 선택해주세요.";
+    if(form.pw.length<4)        e.pw="비밀번호 4자리 이상 입력해주세요.";
     if(form.pw!==form.pwConfirm) e.pwConfirm="비밀번호가 일치하지 않습니다.";
     return e;
   };
@@ -151,7 +191,9 @@ function App() {
     try {
       const params = new URLSearchParams({
         action:"insert", name:form.name, dept:form.dept, date:form.date,
-        time:form.time, course:form.course, note:form.note||"", pw:form.pw
+        time:form.time, course:form.course, note:form.note||"", pw:form.pw,
+        empId:form.empId, empName:form.name,
+        userEmpId:form.userEmpId, userEmpName:form.userEmpName, userDept:form.userDept
       });
       const res = await fetch(`${API_URL}?${params}`);
       const data = await res.json();
@@ -163,8 +205,21 @@ function App() {
     setSaving(false);
   };
 
+  const fetchLookupEmployee = async () => {
+    if(!lookupEmpId.trim()) return;
+    setLookupEmpLoading(true);
+    try {
+      const res = await fetch(`${API_URL}?action=getEmployee&empId=${lookupEmpId}`);
+      const data = await res.json();
+      if(data.success) { setLookupName(data.name); setLookupDept(data.dept); }
+      else { setLookupName(""); setLookupDept(""); setLookupError("사번을 찾을 수 없습니다."); }
+    } catch(e) { console.error(e); }
+    setLookupEmpLoading(false);
+  };
+
   const handleLookup = () => {
-    if(!lookupName.trim()||!lookupPw.trim()){setLookupError("이름과 비밀번호를 입력해주세요.");return;}
+    if(!lookupName.trim()){setLookupError("먼저 사번 조회를 해주세요.");return;}
+    if(!lookupPw.trim()){setLookupError("비밀번호를 입력해주세요.");return;}
     const found=reservations.filter(r=>
       r.name===lookupName.trim() && String(r.pw)===String(lookupPw.trim())
     );
@@ -212,14 +267,61 @@ function App() {
       <div style={{display:"flex",gap:16,alignItems:"flex-start",flexWrap:"wrap"}}>
         <div style={{flex:1,minWidth:260,background:"#f3f9ef",borderRadius:12,padding:"1.4rem",border:"1px solid #c8e0be"}}>
           <h2 style={{fontSize:18,fontWeight:700,color:"#1a4a1a",margin:"0 0 1rem"}}>⛳ 예약 신청</h2>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
-            {[["name","이름","홍길동"],["dept","부서명","영업팀"]].map(([k,l,ph])=>(
-              <div key={k}>
-                <label style={labelStyle}>{l}</label>
-                <input type="text" placeholder={ph} value={form[k]} onChange={e=>setF(k,e.target.value)} style={inputStyle(errors[k])}/>
-                {errors[k]&&<p style={errStyle}>{errors[k]}</p>}
+
+          {/* 신청자(비서) */}
+          <div style={{background:"#eaf4e4",border:"1px solid #b8d8a8",borderRadius:9,padding:"12px",marginBottom:12}}>
+            <p style={{fontSize:12,fontWeight:700,color:"#2e6b2e",margin:"0 0 8px"}}>👤 신청자 (비서)</p>
+            <div style={{display:"grid",gridTemplateColumns:"1fr auto",gap:8,marginBottom:6}}>
+              <div>
+                <label style={labelStyle}>사번</label>
+                <input type="text" placeholder="사번 입력" value={form.empId}
+                  onChange={e=>setF("empId",e.target.value)}
+                  onKeyDown={e=>{if(e.key==="Enter")fetchEmployee(form.empId,"applicant");}}
+                  style={inputStyle(errors.empId)}/>
+                {errors.empId&&<p style={errStyle}>{errors.empId}</p>}
               </div>
-            ))}
+              <div style={{display:"flex",alignItems:"flex-end"}}>
+                <button onClick={()=>fetchEmployee(form.empId,"applicant")}
+                  style={{padding:"9px 12px",background:"#2e6b2e",color:"#fff",border:"none",borderRadius:8,fontSize:13,cursor:"pointer",whiteSpace:"nowrap"}}>
+                  {empLoading?"조회중...":"조회"}
+                </button>
+              </div>
+            </div>
+            {form.name && (
+              <div style={{display:"flex",gap:10,background:"#fff",borderRadius:7,padding:"8px 10px",border:"1px solid #c8e0be",fontSize:13}}>
+                <span style={{color:"#4a6741"}}>이름: <strong>{form.name}</strong></span>
+                <span style={{color:"#4a6741"}}>부서: <strong>{form.dept}</strong></span>
+              </div>
+            )}
+            {errors.name&&<p style={errStyle}>{errors.name}</p>}
+          </div>
+
+          {/* 이용자(임원) */}
+          <div style={{background:"#e8eefa",border:"1px solid #b8c8f0",borderRadius:9,padding:"12px",marginBottom:12}}>
+            <p style={{fontSize:12,fontWeight:700,color:"#1a3a6e",margin:"0 0 8px"}}>👑 이용자 (임원)</p>
+            <div style={{display:"grid",gridTemplateColumns:"1fr auto",gap:8,marginBottom:6}}>
+              <div>
+                <label style={labelStyle}>사번</label>
+                <input type="text" placeholder="사번 입력" value={form.userEmpId}
+                  onChange={e=>setF("userEmpId",e.target.value)}
+                  onKeyDown={e=>{if(e.key==="Enter")fetchEmployee(form.userEmpId,"user");}}
+                  style={inputStyle(errors.userEmpId)}/>
+                {errors.userEmpId&&<p style={errStyle}>{errors.userEmpId}</p>}
+              </div>
+              <div style={{display:"flex",alignItems:"flex-end"}}>
+                <button onClick={()=>fetchEmployee(form.userEmpId,"user")}
+                  style={{padding:"9px 12px",background:"#1a3a6e",color:"#fff",border:"none",borderRadius:8,fontSize:13,cursor:"pointer",whiteSpace:"nowrap"}}>
+                  {userEmpLoading?"조회중...":"조회"}
+                </button>
+              </div>
+            </div>
+            {form.userEmpName && (
+              <div style={{display:"flex",gap:10,background:"#fff",borderRadius:7,padding:"8px 10px",border:"1px solid #b8c8f0",fontSize:13}}>
+                <span style={{color:"#1a3a6e"}}>이름: <strong>{form.userEmpName}</strong></span>
+                <span style={{color:"#1a3a6e"}}>부서: <strong>{form.userDept}</strong></span>
+              </div>
+            )}
+            {errors.userEmpName&&<p style={errStyle}>{errors.userEmpName}</p>}
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
             <div>
@@ -307,7 +409,7 @@ function App() {
             <p style={{fontSize:12,fontWeight:700,color:"#1a2e6e",margin:"0 0 6px"}}>📞 문의처 / 담당자</p>
             <p style={{fontSize:11,color:"#2a3a6e",lineHeight:1.7,margin:0}}>
               HR <strong>홍미소</strong><br/>
-              <a href="tel:010-2101-6313" style={{color:"#1a3a6e",textDecoration:"none",fontWeight:600}}>010-1234-4567</a>
+              <a href="tel:010-1234-4567" style={{color:"#1a3a6e",textDecoration:"none",fontWeight:600}}>010-1234-4567</a>
             </p>
           </div>
         </div>
@@ -319,7 +421,7 @@ function App() {
           onClick={()=>setDateConflict(null)}>
           <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:14,padding:"2rem 1.8rem",maxWidth:300,width:"90%",boxSizing:"border-box",border:"1px solid #ffe082",textAlign:"center"}}>
             <div style={{fontSize:36,marginBottom:10}}>⚠️</div>
-            <h3 style={{fontSize:15,fontWeight:700,color:"#b87d00",margin:"0 0 10px"}}> "[참고사항]"동일 날짜 신청 안내</h3>
+            <h3 style={{fontSize:15,fontWeight:700,color:"#b87d00",margin:"0 0 10px"}}>동일 날짜 신청 안내</h3>
             <p style={{fontSize:14,color:"#7a5c00",lineHeight:1.75,margin:"0 0 20px",background:"#fff8e1",borderRadius:9,padding:"12px 14px",border:"1px solid #ffe082"}}>
               동일한 날짜에 <strong>{dateConflict}명</strong>의 신청건이 있습니다.
             </p>
@@ -353,7 +455,7 @@ function App() {
         <p style={{color:"#4a6741",fontSize:14,lineHeight:1.7,margin:"0 0 6px"}}>담당자 확인 후 순차적으로 안내 드리겠습니다.</p>
 
         <div style={{background:"#fff",border:"1px solid #c8e0be",borderRadius:10,padding:"1rem",textAlign:"left",marginBottom:16,fontSize:14}}>
-          {[["이름",form.name],["부서명",form.dept],["골프장",form.course],["날짜",form.date],["시간",form.time]].map(([k,v])=>(
+          {[["신청자",form.name],["신청자 부서",form.dept],["이용자",form.userEmpName],["이용자 부서",form.userDept],["골프장",form.course],["날짜",form.date],["시간",form.time]].map(([k,v])=>(
             <div key={k} style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
               <span style={{color:"#4a6741"}}>{k}</span>
               <strong style={{color:k==="골프장"?COURSE_COLORS[v]:"#1a4a1a"}}>{v}</strong>
@@ -363,7 +465,7 @@ function App() {
         <div style={{background:"#eaf4e4",border:"1px solid #b8d8a8",borderRadius:9,padding:"10px 14px",marginBottom:20,fontSize:13,color:"#3a6e2a",textAlign:"left"}}>
           🔒 설정한 비밀번호로 <strong>내 예약 확인</strong>에서 조회하실 수 있습니다.
         </div>
-        <button onClick={()=>{setPage("home");setForm({name:"",dept:"",date:"",time:"",course:"",note:"",pw:"",pwConfirm:""});setErrors({});}}
+        <button onClick={()=>{setPage("home");setForm({empId:"",name:"",dept:"",userEmpId:"",userEmpName:"",userDept:"",date:"",time:"",course:"",note:"",pw:"",pwConfirm:""});setErrors({});}}
           style={{...btnPrimary,width:"auto",padding:"11px 28px"}}>홈으로 돌아가기</button>
       </div>
     </div>
@@ -376,15 +478,33 @@ function App() {
         <div style={{textAlign:"center",marginBottom:18}}>
           <div style={{fontSize:32}}>🔍</div>
           <h2 style={{fontSize:17,fontWeight:700,color:"#1a4a1a",margin:"8px 0 0"}}>내 예약 확인</h2>
-          <p style={{fontSize:12,color:"#6a8e61",margin:"6px 0 0"}}>예약 시 입력한 이름과 비밀번호를 입력해주세요.</p>
+          <p style={{fontSize:12,color:"#6a8e61",margin:"6px 0 0"}}>사번 조회 후 비밀번호를 입력해주세요.</p>
         </div>
-        <div style={{marginBottom:12}}>
-          <label style={labelStyle}>이름</label>
-          <input type="text" placeholder="홍길동" value={lookupName} onChange={e=>{setLookupName(e.target.value);setLookupError("");}} style={inputStyle(!!lookupError)}/>
+        <div style={{marginBottom:8}}>
+          <label style={labelStyle}>사번</label>
+          <div style={{display:"flex",gap:8}}>
+            <input type="text" placeholder="사번 입력" value={lookupEmpId}
+              onChange={e=>{setLookupEmpId(e.target.value);setLookupError("");setLookupName("");setLookupDept("");}}
+              onKeyDown={e=>{if(e.key==="Enter")fetchLookupEmployee();}}
+              style={{...inputStyle(false),flex:1}}/>
+            <button onClick={fetchLookupEmployee}
+              style={{padding:"9px 12px",background:"#2e6b2e",color:"#fff",border:"none",borderRadius:8,fontSize:13,cursor:"pointer",whiteSpace:"nowrap"}}>
+              {lookupEmpLoading?"조회중...":"조회"}
+            </button>
+          </div>
         </div>
+        {lookupName&&(
+          <div style={{display:"flex",gap:10,background:"#f3f9ef",borderRadius:7,padding:"8px 10px",border:"1px solid #c8e0be",fontSize:13,marginBottom:10}}>
+            <span style={{color:"#4a6741"}}>이름: <strong>{lookupName}</strong></span>
+            <span style={{color:"#4a6741"}}>부서: <strong>{lookupDept}</strong></span>
+          </div>
+        )}
         <div style={{marginBottom:14}}>
           <label style={labelStyle}>비밀번호</label>
-          <input type="password" placeholder="설정한 비밀번호" value={lookupPw} onChange={e=>{setLookupPw(e.target.value);setLookupError("");}} onKeyDown={e=>{if(e.key==="Enter")handleLookup();}} style={inputStyle(!!lookupError)}/>
+          <input type="password" placeholder="설정한 비밀번호" value={lookupPw}
+            onChange={e=>{setLookupPw(e.target.value);setLookupError("");}}
+            onKeyDown={e=>{if(e.key==="Enter")handleLookup();}}
+            style={inputStyle(!!lookupError)}/>
         </div>
         {lookupError&&<p style={{...errStyle,marginBottom:8,fontSize:13}}>{lookupError}</p>}
         <button onClick={handleLookup} style={btnPrimary}>예약 조회</button>
@@ -446,13 +566,20 @@ function App() {
     <div style={{padding:"1.2rem 1rem",maxWidth:760,margin:"0 auto"}}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14,flexWrap:"wrap",gap:8}}>
         <h2 style={{fontSize:19,fontWeight:700,color:"#1a4a1a",margin:0}}>⛳ 예약 관리</h2>
-        <div style={{display:"flex",gap:8}}>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          {/* 골프장 바로가기 */}
+          {COURSES.map(c=>(
+            <a key={c} href={COURSE_URLS[c]} target="_blank" rel="noreferrer"
+              style={{padding:"7px 12px",background:COURSE_BG[c],color:COURSE_COLORS[c],border:`1px solid ${COURSE_COLORS[c]}40`,
+                borderRadius:8,fontSize:12,fontWeight:600,textDecoration:"none",cursor:"pointer"}}>
+              {c} 🔗
+            </a>
+          ))}
           <button onClick={()=>{
-            const header=["ID","이름","부서","날짜","시간","골프장","요청사항","상태","신청일"];
-            const rows=reservations.map(r=>[r.id,r.name,r.dept,r.date,r.time,r.course,r.note||"",STATUS[r.status]?.label||r.status,r.created_at||""]);
+            const header=["ID","이름","부서","날짜","시간","골프장","요청사항","상태","신청일","신청자사번","신청자","이용자사번","이용자","이용자부서"];
+            const rows=reservations.map(r=>[r.id,r.name,r.dept,r.date,r.time,r.course,r.note||"",STATUS[r.status]?.label||r.status,r.created_at||"",r.empId||"",r.empName||"",r.userEmpId||"",r.userEmpName||"",r.userDept||""]);
             const csv=[header,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
-            const bom="\uFEFF";
-            const blob=new Blob([bom+csv],{type:"text/csv;charset=utf-8;"});
+            const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"});
             const url=URL.createObjectURL(blob);
             const a=document.createElement("a");
             a.href=url; a.download="골프예약목록.csv"; a.click();
