@@ -319,7 +319,7 @@ function App() {
           onClick={()=>setDateConflict(null)}>
           <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:14,padding:"2rem 1.8rem",maxWidth:300,width:"90%",boxSizing:"border-box",border:"1px solid #ffe082",textAlign:"center"}}>
             <div style={{fontSize:36,marginBottom:10}}>⚠️</div>
-            <h3 style={{fontSize:15,fontWeight:700,color:"#b87d00",margin:"0 0 10px"}}>[참고사항] 동일 날짜 신청 안내</h3>
+            <h3 style={{fontSize:15,fontWeight:700,color:"#b87d00",margin:"0 0 10px"}}> [참고사항]동일 날짜 신청 안내</h3>
             <p style={{fontSize:14,color:"#7a5c00",lineHeight:1.75,margin:"0 0 20px",background:"#fff8e1",borderRadius:9,padding:"12px 14px",border:"1px solid #ffe082"}}>
               동일한 날짜에 <strong>{dateConflict}명</strong>의 신청건이 있습니다.
             </p>
