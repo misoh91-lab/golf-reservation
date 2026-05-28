@@ -1,9 +1,17 @@
 // ⚠️ Apps Script URL (이미 연결됨)
 const API_URL = "https://script.google.com/macros/s/AKfycbw3m_OuOCSI6c0Bn4ubbofB99oICIRnhTdQ8yjwjJqyDUkR20PpyBkTcHhvi_cvzK6o/exec";
-const ADMIN_PASSWORD = "golf1234"; // 원하시면 변경하세요
+const ADMIN_PASSWORD = "golf1234";
 const COURSES = ["코리아", "크리스탈밸리", "설해원"];
 const COURSE_COLORS = { "코리아": "#1a5c2e", "크리스탈밸리": "#1a3a6e", "설해원": "#8b1a1a" };
 const COURSE_BG    = { "코리아": "#e8f5e0", "크리스탈밸리": "#e3ecfa", "설해원": "#faeaea" };
+
+// ✅ 골프장별 팝업 안내 내용
+const COURSE_NOTICES = {
+  "코리아":      { title: "코리아CC 예약 안내",    msg: "코리아CC의 경우 예약신청일 전월 20일에 확정 여부 확인 가능합니다." },
+  "크리스탈밸리": { title: "크리스탈밸리 예약 안내", msg: "크리스탈밸리의 경우 예약신청일 전월 2주차 화요일에 확정 여부 확인 가능합니다." },
+  "설해원":      { title: "설해원 예약 안내",       msg: "설해원의 경우 예약신청일 전월 1주차 내 확정 여부 확인 가능합니다." },
+};
+
 const STATUS = {
   pending:   { label: "대기중", color: "#b87d00", bg: "#fff8e1" },
   confirmed: { label: "확정",   color: "#1a6e3a", bg: "#e8f5e9" },
@@ -87,7 +95,7 @@ function App() {
   const [reservations, setReservations] = React.useState([]);
   const [form, setForm] = React.useState({name:"",dept:"",date:"",time:"",course:"",note:"",pw:"",pwConfirm:""});
   const [errors, setErrors] = React.useState({});
-  const [showKoreaNotice, setShowKoreaNotice] = React.useState(false);
+  const [courseNotice, setCourseNotice] = React.useState(null); // ✅ 팝업 상태
   const [lookupName, setLookupName] = React.useState("");
   const [lookupPw,   setLookupPw]   = React.useState("");
   const [lookupError, setLookupError] = React.useState("");
@@ -218,8 +226,9 @@ function App() {
           <div style={{marginBottom:12}}>
             <label style={labelStyle}>골프장 선택</label>
             <div style={{display:"flex",gap:8}}>
+              {/* ✅ 각 골프장 클릭 시 해당 팝업 표시 */}
               {COURSES.map(c=>(
-                <button key={c} onClick={()=>{setF("course",c);if(c==="코리아")setShowKoreaNotice(true);}}
+                <button key={c} onClick={()=>{ setF("course",c); setCourseNotice(COURSE_NOTICES[c]); }}
                   style={{flex:1,padding:"9px 6px",borderRadius:8,border:form.course===c?`2px solid ${COURSE_COLORS[c]}`:"1px solid #c8d8c0",
                     background:form.course===c?COURSE_BG[c]:"#fff",color:form.course===c?COURSE_COLORS[c]:"#4a6741",
                     fontWeight:form.course===c?700:400,fontSize:13,cursor:"pointer"}}>
@@ -260,7 +269,7 @@ function App() {
             <p style={{fontSize:12,fontWeight:700,color:"#b87d00",margin:"0 0 6px"}}>⚠️ 예약 주의사항</p>
             <p style={{fontSize:11,color:"#7a5c00",lineHeight:1.65,margin:0}}>
               예약 취소는 이용일 <strong>최소 10일 전</strong>까지 담당자에게 연락 바랍니다.<br/>
-              <span style={{color:"#c0392b"}}>(법인명의로 패널티 부여)</span>
+              <span style={{color:"#c0392b"}}>(법인명의로 패널티 부여되므로 꼭 연락주시기 바랍니다.)</span>
             </p>
           </div>
           <div style={{background:"#f3f9ef",border:"1px solid #c8e0be",borderRadius:12,padding:"12px 14px"}}>
@@ -286,15 +295,17 @@ function App() {
         </div>
       </div>
 
-      {showKoreaNotice&&(
-        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.35)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999}} onClick={()=>setShowKoreaNotice(false)}>
+      {/* ✅ 골프장별 팝업 */}
+      {courseNotice&&(
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.35)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999}}
+          onClick={()=>setCourseNotice(null)}>
           <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:14,padding:"2rem 1.8rem",maxWidth:320,width:"90%",boxSizing:"border-box",border:"1px solid #c8e0be",textAlign:"center"}}>
             <div style={{fontSize:36,marginBottom:10}}>📋</div>
-            <h3 style={{fontSize:16,fontWeight:700,color:"#1a4a1a",margin:"0 0 10px"}}>코리아CC 예약 안내</h3>
+            <h3 style={{fontSize:16,fontWeight:700,color:"#1a4a1a",margin:"0 0 10px"}}>{courseNotice.title}</h3>
             <p style={{fontSize:14,color:"#4a6741",lineHeight:1.75,margin:"0 0 20px",background:"#f3f9ef",borderRadius:9,padding:"12px 14px",border:"1px solid #c8e0be"}}>
-              코리아CC의 경우 예약신청일 <strong style={{color:"#1a5c2e"}}>전월 20일</strong>에<br/>확정 여부 확인 가능합니다.
+              {courseNotice.msg}
             </p>
-            <button onClick={()=>setShowKoreaNotice(false)} style={{...btnPrimary,width:"auto",padding:"10px 32px"}}>확인</button>
+            <button onClick={()=>setCourseNotice(null)} style={{...btnPrimary,width:"auto",padding:"10px 32px"}}>확인</button>
           </div>
         </div>
       )}
@@ -398,7 +409,6 @@ function App() {
     </div>
   );
 
-  // ADMIN
   return (
     <div style={{padding:"1.2rem 1rem",maxWidth:760,margin:"0 auto"}}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14,flexWrap:"wrap",gap:8}}>
