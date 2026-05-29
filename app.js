@@ -1,5 +1,5 @@
 // ⚠️ Apps Script URL (이미 연결됨)
-const API_URL = "https://script.google.com/macros/s/AKfycbxh4SIrlR2O6vZfTxcenmUDRZkSS1B1hpEu5TCjj758UcVkeFxKqbeP-7BI1leq4ff5/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzVBb14tpt-iEbl9REV49l98wHNQOt7O596fe-ASIs0lvhJ1Zfd4LG5DQQAce8FBc6K/exec";
 const ADMIN_PASSWORD = "golf1234";
 const COURSES = ["코리아", "크리스탈밸리", "설해원"];
 const COURSE_COLORS = { "코리아": "#1a5c2e", "크리스탈밸리": "#1a3a6e", "설해원": "#8b1a1a" };
@@ -409,7 +409,7 @@ function App() {
             <p style={{fontSize:12,fontWeight:700,color:"#1a2e6e",margin:"0 0 6px"}}>📞 문의처 / 담당자</p>
             <p style={{fontSize:11,color:"#2a3a6e",lineHeight:1.7,margin:0}}>
               HR <strong>홍미소</strong><br/>
-              <a href="tel:010-2101-6313" style={{color:"#1a3a6e",textDecoration:"none",fontWeight:600}}>010-1234-4567</a>
+              <a href="tel:010-1234-4567" style={{color:"#1a3a6e",textDecoration:"none",fontWeight:600}}>010-1234-4567</a>
             </p>
           </div>
         </div>
