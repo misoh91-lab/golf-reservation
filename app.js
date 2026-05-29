@@ -235,8 +235,68 @@ function App() {
     } catch(e) { console.error("상태 변경 실패:",e); }
   };
 
-  const filtered=(filterStatus==="all"?reservations:reservations.filter(r=>r.status===filterStatus))
-    .filter(r=>!calSel||r.date===calSel);
+  // ── 어드민 알림 계산 ──
+  const getAdminAlerts = () => {
+    const today = new Date();
+    const year  = today.getFullYear();
+    const month = today.getMonth() + 1;
+    const day   = today.getDate();
+    const dow   = today.getDay(); // 0=일 1=월 ... 2=화
+    const alerts = [];
+
+    // ① 코리아 신청기간 (매월 5~10일)
+    if (day >= 5 && day <= 10) {
+      alerts.push({ type: "신청기간", course: "코리아", color: COURSE_COLORS["코리아"], bg: COURSE_BG["코리아"],
+        msg: `코리아CC 예약 신청 기간입니다! (매월 5~10일, 오늘: ${month}월 ${day}일)`, url: COURSE_URLS["코리아"] });
+    }
+
+    // ① 코리아 확정일 (매월 20일)
+    if (day === 20) {
+      alerts.push({ type: "확정일", course: "코리아", color: "#b87d00", bg: "#fff8e1",
+        msg: `오늘은 코리아CC 예약 확정일입니다! (전월 20일) 사이트에서 확정 여부를 확인하세요.`, url: COURSE_URLS["코리아"] });
+    }
+
+    // 크리스탈밸리/설해원 — 예약건 기준으로 체크
+    reservations.filter(r => r.status !== "cancelled").forEach(r => {
+      const course = String(r.course || "").replace(/^'/, "");
+      if (course !== "크리스탈밸리" && course !== "설해원") return;
+      const dateStr = String(r.date || "").replace(/^'/, "").substring(0, 10);
+      if (!dateStr || dateStr.length < 10) return;
+      const resDate  = new Date(dateStr);
+      const resYear  = resDate.getFullYear();
+      const resMonth = resDate.getMonth() + 1;
+      const userName = String(r.userEmpName || r.name || "").replace(/^'/, "");
+      const siteUrl  = COURSE_URLS[course];
+
+      // ① 신청기간: 예약일 2개월 전 25~28일
+      let applyMonth = resMonth - 2;
+      let applyYear  = resYear;
+      if (applyMonth <= 0) { applyMonth += 12; applyYear -= 1; }
+      if (year === applyYear && month === applyMonth && day >= 25 && day <= 28) {
+        alerts.push({ type: "신청기간", course, color: COURSE_COLORS[course], bg: COURSE_BG[course],
+          msg: `${course} 예약 신청 기간입니다! (예약일 2개월 전 25~28일)\n이용자: ${userName} / 예약일: ${dateStr}`, url: siteUrl });
+      }
+
+      // ② 확정일 체크
+      let confirmMonth = resMonth - 1;
+      let confirmYear  = resYear;
+      if (confirmMonth <= 0) { confirmMonth += 12; confirmYear -= 1; }
+      if (year === confirmYear && month === confirmMonth) {
+        if (course === "크리스탈밸리" && day >= 8 && day <= 14 && dow === 2) {
+          alerts.push({ type: "확정일", course, color: "#b87d00", bg: "#fff8e1",
+            msg: `오늘은 크리스탈밸리 예약 확정일입니다! (전월 2주차 화요일)\n이용자: ${userName} / 예약일: ${dateStr}`, url: siteUrl });
+        }
+        if (course === "설해원" && day >= 1 && day <= 7) {
+          alerts.push({ type: "확정일", course, color: "#b87d00", bg: "#fff8e1",
+            msg: `설해원 예약 확정 기간입니다! (전월 1주차 내)\n이용자: ${userName} / 예약일: ${dateStr}`, url: siteUrl });
+        }
+      }
+    });
+
+    return alerts;
+  };
+
+  const adminAlerts = page === "admin" ? getAdminAlerts() : [];
 
   if(loading) return (
     <div style={{minHeight:300,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:12}}>
@@ -600,7 +660,33 @@ function App() {
           <button onClick={()=>{setPage("home");setAdminPw("");}} style={{padding:"7px 14px",background:"none",border:"1px solid #c8e0be",borderRadius:8,color:"#4a6741",fontSize:13,cursor:"pointer"}}>로그아웃</button>
         </div>
       </div>
-      <div style={{display:"flex",gap:14,alignItems:"flex-start",flexWrap:"wrap"}}>
+      {/* 알림 배너 */}
+      {adminAlerts.length > 0 && (
+        <div style={{marginBottom:16,display:"flex",flexDirection:"column",gap:8}}>
+          {adminAlerts.map((a,i)=>(
+            <div key={i} style={{background:a.bg,border:`1px solid ${a.color}40`,borderLeft:`4px solid ${a.color}`,borderRadius:10,padding:"12px 14px",display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:10}}>
+              <div>
+                <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
+                  <span style={{fontSize:11,fontWeight:700,padding:"2px 8px",borderRadius:10,background:a.color,color:"#fff"}}>
+                    {a.type==="신청기간"?"📝 신청기간":"✅ 확정일"}
+                  </span>
+                  <span style={{fontSize:12,fontWeight:700,color:a.color}}>{a.course}</span>
+                </div>
+                <p style={{fontSize:12,color:"#333",margin:0,lineHeight:1.6,whiteSpace:"pre-line"}}>{a.msg}</p>
+              </div>
+              <a href={a.url} target="_blank" rel="noreferrer"
+                style={{flexShrink:0,padding:"6px 12px",background:a.color,color:"#fff",borderRadius:7,fontSize:12,fontWeight:600,textDecoration:"none",whiteSpace:"nowrap"}}>
+                사이트 이동 🔗
+              </a>
+            </div>
+          ))}
+        </div>
+      )}
+      {adminAlerts.length === 0 && (
+        <div style={{marginBottom:14,background:"#f3f9ef",border:"1px solid #c8e0be",borderRadius:10,padding:"10px 14px",fontSize:12,color:"#4a6741"}}>
+          ✅ 오늘은 신청기간 및 확정일 알림이 없습니다.
+        </div>
+      )}
         <div style={{flex:1,minWidth:280}}>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:14}}>
             {[["전체",reservations.length,"#1a4a1a"],["대기중",reservations.filter(r=>r.status==="pending").length,"#b87d00"],["확정",reservations.filter(r=>r.status==="confirmed").length,"#1a6e3a"]].map(([l,c,col])=>(
