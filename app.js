@@ -405,12 +405,34 @@ function App() {
           </div>
           <div style={{background:"#f3f9ef",border:"1px solid #c8e0be",borderRadius:12,padding:"12px 14px"}}>
             <p style={{fontSize:12,fontWeight:700,color:"#1a4a1a",margin:"0 0 8px"}}>⛳ 골프장별 예약 확정일<br/><span style={{fontSize:10,fontWeight:400,color:"#6a8e61"}}>(이용일 기준)</span></p>
-            {[["코리아CC","#1a5c2e","#e8f5e0","전월 20일 확정"],["크리스탈밸리","#1a3a6e","#e3ecfa","전월 2주차 화요일 확정"],["설해원","#8b1a1a","#faeaea","전월 1주차 내 확정"]].map(([name,color,bg,desc])=>(
-              <div key={name} style={{display:"flex",flexDirection:"column",background:bg,borderRadius:8,padding:"6px 9px",marginBottom:5}}>
-                <span style={{fontSize:11,fontWeight:700,color}}>{name}</span>
-                <span style={{fontSize:11,color:"#444",marginTop:1}}>{desc}</span>
-              </div>
-            ))}
+            {(()=>{
+              const today = new Date();
+              const nextMonth = today.getMonth() + 2; // 다음달 기준
+              const nextYear = nextMonth > 12 ? today.getFullYear() + 1 : today.getFullYear();
+              const nm = nextMonth > 12 ? 1 : nextMonth;
+              const exampleDay = 27;
+              // 코리아: 전월 20일
+              const korConfirmMonth = nm - 1 <= 0 ? 12 : nm - 1;
+              const korConfirmYear = nm - 1 <= 0 ? nextYear - 1 : nextYear;
+              // 크리스탈밸리: 전월 2주차 화요일 (8~14일 중 화요일)
+              let crystalTuesday = 8;
+              for(let d=8;d<=14;d++){
+                if(new Date(korConfirmYear, korConfirmMonth-1, d).getDay()===2){ crystalTuesday=d; break; }
+              }
+              // 설해원: 전월 1주차 내 (예시 7일)
+              const seolConfirmMonth = nm - 1 <= 0 ? 12 : nm - 1;
+              return [
+                ["코리아CC","#1a5c2e","#e8f5e0",`전월 20일 확정`,`ex) ${nm}/${exampleDay} 이용일, ${korConfirmMonth}/20 확정`],
+                ["크리스탈밸리","#1a3a6e","#e3ecfa",`전월 2주차 화요일 확정`,`ex) ${nm}/${exampleDay} 이용일, ${korConfirmMonth}/${crystalTuesday} 확정`],
+                ["설해원","#8b1a1a","#faeaea",`전월 1주차 내 확정`,`ex) ${nm}/${exampleDay} 이용일, ${seolConfirmMonth}/7 확정`],
+              ].map(([name,color,bg,desc,ex])=>(
+                <div key={name} style={{display:"flex",flexDirection:"column",background:bg,borderRadius:8,padding:"6px 9px",marginBottom:5}}>
+                  <span style={{fontSize:11,fontWeight:700,color}}>{name}</span>
+                  <span style={{fontSize:11,color:"#444",marginTop:1}}>{desc}</span>
+                  <span style={{fontSize:10,color:"#888",marginTop:2}}>{ex}</span>
+                </div>
+              ));
+            })()}
           </div>
           <div style={{background:"#f0f4ff",border:"1px solid #c5cff5",borderRadius:12,padding:"12px 14px"}}>
             <p style={{fontSize:12,fontWeight:700,color:"#1a2e6e",margin:"0 0 6px"}}>📞 문의처 / 담당자</p>
