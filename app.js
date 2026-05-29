@@ -13,7 +13,7 @@ const COURSE_URLS = {
 };
 
 const COURSE_NOTICES = {
-  "코리아":      { title: "코리아CC 예약 안내",    msg: "코리아CC의 경우 예약신청일 전월 20일에 확정 여부 확인 가능합니다." "ex. 이용일 5/31, 확정일 4/20" },
+  "코리아":      { title: "코리아CC 예약 안내",    msg: "코리아CC의 경우 예약신청일 전월 20일에 확정 여부 확인 가능합니다." },
   "크리스탈밸리": { title: "크리스탈밸리 예약 안내", msg: "크리스탈밸리의 경우 예약신청일 전월 2주차 화요일에 확정 여부 확인 가능합니다." },
   "설해원":      { title: "설해원 예약 안내",       msg: "설해원의 경우 예약신청일 전월 1주차 내 확정 여부 확인 가능합니다." },
 };
@@ -409,7 +409,7 @@ function App() {
             <p style={{fontSize:12,fontWeight:700,color:"#1a2e6e",margin:"0 0 6px"}}>📞 문의처 / 담당자</p>
             <p style={{fontSize:11,color:"#2a3a6e",lineHeight:1.7,margin:0}}>
               HR <strong>홍미소</strong><br/>
-              <a href="tel:010-1234-4567" style={{color:"#1a3a6e",textDecoration:"none",fontWeight:600}}>010-1234-4567</a>
+              <a href="tel:010-2101-6313" style={{color:"#1a3a6e",textDecoration:"none",fontWeight:600}}>010-1234-4567</a>
             </p>
           </div>
         </div>
