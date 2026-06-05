@@ -113,38 +113,21 @@ function App() {
   const [filterStatus, setFilterStatus] = React.useState("all");
   const [calSel, setCalSel] = React.useState("");
 
-  React.useEffect(() => {
-    (async () => {
+  // 데이터 로드
+  React.useEffect(()=>{
+    (async()=>{
       try {
         const res = await fetch(`${API_URL}?action=getAll`);
         const data = await res.json();
-        if (Array.isArray(data)) setReservations(data);
-      } catch(e) { console.error(e); }
-      finally { setLoading(false); }
+        if(Array.isArray(data)) setReservations(data);
+      } catch(e){ console.error(e); }
+      finally{ setLoading(false); }
     })();
-  }, []);
+  },[]);
 
-  // 신청자 사번 자동조회
-  React.useEffect(()=>{
-    if(!form.empId.trim()) { setForm(f=>({...f,name:"",dept:""})); return; }
-    const timer = setTimeout(()=>fetchEmployee(form.empId,"applicant"), 500);
-    return ()=>clearTimeout(timer);
-  },[form.empId]);
+  const setF = (k,v) => { setForm(f=>({...f,[k]:v})); setErrors(e=>({...e,[k]:""})); };
 
-  // 이용자 사번 자동조회
-  React.useEffect(()=>{
-    if(!form.userEmpId.trim()) { setForm(f=>({...f,userEmpName:"",userDept:""})); return; }
-    const timer = setTimeout(()=>fetchEmployee(form.userEmpId,"user"), 500);
-    return ()=>clearTimeout(timer);
-  },[form.userEmpId]);
-
-  // 내 예약확인 사번 자동조회
-  React.useEffect(()=>{
-    if(!lookupEmpId.trim()) { setLookupName(""); setLookupDept(""); return; }
-    const timer = setTimeout(()=>fetchLookupEmployee(), 500);
-    return ()=>clearTimeout(timer);
-  },[lookupEmpId]);
-
+  // 직원 조회 함수 (먼저 정의)
   const fetchEmployee = async (empId, type) => {
     if(!empId.trim()) return;
     type==="user" ? setUserEmpLoading(true) : setEmpLoading(true);
@@ -152,31 +135,49 @@ function App() {
       const res = await fetch(`${API_URL}?action=getEmployee&empId=${empId}`);
       const data = await res.json();
       if(data.success) {
-        if(type==="user") setForm(f=>({...f, userEmpName:data.name, userDept:data.dept}));
-        else setForm(f=>({...f, name:data.name, dept:data.dept}));
+        if(type==="user") setForm(f=>({...f,userEmpName:data.name,userDept:data.dept}));
+        else setForm(f=>({...f,name:data.name,dept:data.dept}));
       } else {
-        if(type==="user") setForm(f=>({...f, userEmpName:"", userDept:""}));
-        else setForm(f=>({...f, name:"", dept:""}));
-        alert(data.error || "사번을 찾을 수 없습니다.");
+        if(type==="user") setForm(f=>({...f,userEmpName:"",userDept:""}));
+        else setForm(f=>({...f,name:"",dept:""}));
       }
-    } catch(e) { console.error(e); }
+    } catch(e){ console.error(e); }
     type==="user" ? setUserEmpLoading(false) : setEmpLoading(false);
   };
 
-  const fetchLookupEmployee = async () => {
-    if(!lookupEmpId.trim()) return;
+  const fetchLookupEmployee = async (empId) => {
+    if(!empId || !empId.trim()) return;
     setLookupEmpLoading(true);
     try {
-      const res = await fetch(`${API_URL}?action=getEmployee&empId=${lookupEmpId}`);
+      const res = await fetch(`${API_URL}?action=getEmployee&empId=${empId}`);
       const data = await res.json();
-      if(data.success) { setLookupName(data.name); setLookupDept(data.dept); }
+      if(data.success){ setLookupName(data.name); setLookupDept(data.dept); }
       else { setLookupName(""); setLookupDept(""); setLookupError("사번을 찾을 수 없습니다."); }
-    } catch(e) { console.error(e); }
+    } catch(e){ console.error(e); }
     setLookupEmpLoading(false);
   };
 
+  // 자동조회 useEffect (함수 정의 후)
+  React.useEffect(()=>{
+    if(!form.empId.trim()){ setForm(f=>({...f,name:"",dept:""})); return; }
+    const t = setTimeout(()=>fetchEmployee(form.empId,"applicant"),500);
+    return ()=>clearTimeout(t);
+  },[form.empId]);
+
+  React.useEffect(()=>{
+    if(!form.userEmpId.trim()){ setForm(f=>({...f,userEmpName:"",userDept:""})); return; }
+    const t = setTimeout(()=>fetchEmployee(form.userEmpId,"user"),500);
+    return ()=>clearTimeout(t);
+  },[form.userEmpId]);
+
+  React.useEffect(()=>{
+    if(!lookupEmpId.trim()){ setLookupName(""); setLookupDept(""); return; }
+    const t = setTimeout(()=>fetchLookupEmployee(lookupEmpId),500);
+    return ()=>clearTimeout(t);
+  },[lookupEmpId]);
+
   const checkDateConflict = (d) => {
-    const conflicts = reservations.filter(r => {
+    const conflicts = reservations.filter(r=>{
       if(String(r.status).replace(/^'/,"") === "cancelled") return false;
       const rd = String(r.date||"").replace(/^'/,"").substring(0,10);
       return rd === d;
@@ -211,11 +212,11 @@ function App() {
       });
       const res = await fetch(`${API_URL}?${params}`);
       const data = await res.json();
-      if(data.success) {
+      if(data.success){
         setReservations(prev=>[{id:data.id,...form,status:"pending"},...prev]);
         setPage("success");
       }
-    } catch(e) { console.error(e); }
+    } catch(e){ console.error(e); }
     setSaving(false);
   };
 
@@ -223,7 +224,7 @@ function App() {
     if(!lookupName.trim()){setLookupError("먼저 사번 조회를 해주세요.");return;}
     if(!lookupPw.trim()){setLookupError("비밀번호를 입력해주세요.");return;}
     const found=reservations.filter(r=>
-      String(r.name).replace(/^'/,"")===lookupName.trim() &&
+      String(r.name).replace(/^'/,"")===lookupName.trim()&&
       String(r.pw).replace(/^'/,"")===lookupPw.trim()
     );
     if(found.length===0){setLookupError("일치하는 예약 정보가 없습니다.");return;}
@@ -232,43 +233,31 @@ function App() {
 
   const changeStatus = async (id, status) => {
     try {
-      const params = new URLSearchParams({ action:"updateStatus", id, status });
+      const params = new URLSearchParams({action:"updateStatus",id,status});
       await fetch(`${API_URL}?${params}`);
       setReservations(prev=>prev.map(r=>r.id===id?{...r,status}:r));
-    } catch(e) { console.error(e); }
+    } catch(e){ console.error(e); }
   };
 
-  // 어드민 알림 계산
   const getAdminAlerts = () => {
-    const today = new Date();
-    const year=today.getFullYear(), month=today.getMonth()+1, day=today.getDate(), dow=today.getDay();
+    const today=new Date(), year=today.getFullYear(), month=today.getMonth()+1, day=today.getDate(), dow=today.getDay();
     const alerts=[];
-    if(day>=5&&day<=10) alerts.push({type:"신청기간",course:"코리아",color:COURSE_COLORS["코리아"],bg:COURSE_BG["코리아"],
-      msg:`코리아CC 예약 신청 기간입니다! (매월 5~10일, 오늘: ${month}월 ${day}일)`,url:COURSE_URLS["코리아"]});
-    if(day===20) alerts.push({type:"확정일",course:"코리아",color:"#b87d00",bg:"#fff8e1",
-      msg:`오늘은 코리아CC 예약 확정일입니다! (전월 20일) 사이트에서 확정 여부를 확인하세요.`,url:COURSE_URLS["코리아"]});
+    if(day>=5&&day<=10) alerts.push({type:"신청기간",course:"코리아",color:COURSE_COLORS["코리아"],bg:COURSE_BG["코리아"],msg:`코리아CC 예약 신청 기간입니다! (매월 5~10일, 오늘: ${month}월 ${day}일)`,url:COURSE_URLS["코리아"]});
+    if(day===20) alerts.push({type:"확정일",course:"코리아",color:"#b87d00",bg:"#fff8e1",msg:`오늘은 코리아CC 예약 확정일입니다! (전월 20일) 사이트에서 확정 여부를 확인하세요.`,url:COURSE_URLS["코리아"]});
     reservations.filter(r=>String(r.status).replace(/^'/,"")!=="cancelled").forEach(r=>{
       const course=String(r.course||"").replace(/^'/,"");
       if(course!=="크리스탈밸리"&&course!=="설해원") return;
       const dateStr=String(r.date||"").replace(/^'/,"").substring(0,10);
       if(!dateStr||dateStr.length<10) return;
-      const resDate=new Date(dateStr), resYear=resDate.getFullYear(), resMonth=resDate.getMonth()+1;
+      const resDate=new Date(dateStr),resYear=resDate.getFullYear(),resMonth=resDate.getMonth()+1;
       const userName=String(r.userEmpName||r.name||"").replace(/^'/,"");
       const siteUrl=COURSE_URLS[course];
-      let applyMonth=resMonth-2, applyYear=resYear;
-      if(applyMonth<=0){applyMonth+=12;applyYear-=1;}
-      if(year===applyYear&&month===applyMonth&&day>=25&&day<=28)
-        alerts.push({type:"신청기간",course,color:COURSE_COLORS[course],bg:COURSE_BG[course],
-          msg:`${course} 예약 신청 기간입니다! (예약일 2개월 전 25~28일)\n이용자: ${userName} / 예약일: ${dateStr}`,url:siteUrl});
-      let confirmMonth=resMonth-1, confirmYear=resYear;
-      if(confirmMonth<=0){confirmMonth+=12;confirmYear-=1;}
-      if(year===confirmYear&&month===confirmMonth){
-        if(course==="크리스탈밸리"&&day>=8&&day<=14&&dow===2)
-          alerts.push({type:"확정일",course,color:"#b87d00",bg:"#fff8e1",
-            msg:`오늘은 크리스탈밸리 예약 확정일입니다! (전월 2주차 화요일)\n이용자: ${userName} / 예약일: ${dateStr}`,url:siteUrl});
-        if(course==="설해원"&&day>=1&&day<=7)
-          alerts.push({type:"확정일",course,color:"#b87d00",bg:"#fff8e1",
-            msg:`설해원 예약 확정 기간입니다! (전월 1주차 내)\n이용자: ${userName} / 예약일: ${dateStr}`,url:siteUrl});
+      let am=resMonth-2,ay=resYear; if(am<=0){am+=12;ay-=1;}
+      if(year===ay&&month===am&&day>=25&&day<=28) alerts.push({type:"신청기간",course,color:COURSE_COLORS[course],bg:COURSE_BG[course],msg:`${course} 예약 신청 기간입니다!\n이용자: ${userName} / 예약일: ${dateStr}`,url:siteUrl});
+      let cm=resMonth-1,cy=resYear; if(cm<=0){cm+=12;cy-=1;}
+      if(year===cy&&month===cm){
+        if(course==="크리스탈밸리"&&day>=8&&day<=14&&dow===2) alerts.push({type:"확정일",course,color:"#b87d00",bg:"#fff8e1",msg:`크리스탈밸리 예약 확정일!\n이용자: ${userName} / 예약일: ${dateStr}`,url:siteUrl});
+        if(course==="설해원"&&day>=1&&day<=7) alerts.push({type:"확정일",course,color:"#b87d00",bg:"#fff8e1",msg:`설해원 예약 확정 기간!\n이용자: ${userName} / 예약일: ${dateStr}`,url:siteUrl});
       }
     });
     return alerts;
@@ -284,80 +273,51 @@ function App() {
     </div>
   );
 
-  if(page==="home") {
-    const today = new Date();
-    const month = today.getMonth() + 1;
-    const day = today.getDate();
-
-    // 코리아 접수일정: 매월 5~10일 (다음 접수일까지 D-day)
-    let korDday = "";
-    if(day < 5) korDday = `D-${5-day}`;
-    else if(day <= 10) korDday = "접수중!";
-    else { const daysInMonth = new Date(today.getFullYear(), month, 0).getDate(); korDday = `D-${daysInMonth - day + 5}`; }
-
-    // 크리스탈밸리/설해원: 매월 25~28일
-    let crystalDday = "";
-    if(day < 25) crystalDday = `D-${25-day}`;
-    else if(day <= 28) crystalDday = "접수중!";
-    else { const daysInMonth2 = new Date(today.getFullYear(), month, 0).getDate(); crystalDday = `D-${daysInMonth2 - day + 25}`; }
-
+  // HOME
+  if(page==="home"){
+    const today=new Date(), month=today.getMonth()+1, day=today.getDate();
+    let korDday="";
+    if(day<5) korDday=`D-${5-day}`;
+    else if(day<=10) korDday="접수중!";
+    else{ const dim=new Date(today.getFullYear(),month,0).getDate(); korDday=`D-${dim-day+5}`; }
+    let crystalDday="";
+    if(day<25) crystalDday=`D-${25-day}`;
+    else if(day<=28) crystalDday="접수중!";
+    else{ const dim2=new Date(today.getFullYear(),month,0).getDate(); crystalDday=`D-${dim2-day+25}`; }
     return (
-    <div style={{minHeight:480,background:"linear-gradient(160deg,#e8f5e0 0%,#f0f7eb 100%)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem 1rem"}}>
-      <div style={{fontSize:48,marginBottom:8}}>⛳</div>
-      <h1 style={{fontSize:26,fontWeight:700,color:"#1a4a1a",margin:"0 0 6px"}}>SK스퀘어 골프예약 신청</h1>
-      <p style={{color:"#4a6741",fontSize:15,margin:"0 0 16px",textAlign:"center"}}>임원(비서)전용 예약신청 페이지입니다.</p>
-
-      {/* 접수일정 */}
-      <div style={{background:"#fff",border:"1px solid #c8e0be",borderRadius:14,padding:"14px 20px",marginBottom:24,width:"100%",maxWidth:380,boxSizing:"border-box"}}>
-        <p style={{fontSize:12,fontWeight:700,color:"#1a4a1a",margin:"0 0 10px",textAlign:"center"}}>📅 골프장 접수 일정</p>
-        <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          {/* 코리아 */}
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:COURSE_BG["코리아"],borderRadius:9,padding:"8px 12px"}}>
-            <div>
-              <span style={{fontSize:12,fontWeight:700,color:COURSE_COLORS["코리아"]}}>코리아CC</span>
-              <span style={{fontSize:11,color:"#4a6741",marginLeft:6}}>매월 5~10일 (D-1개월)</span>
-            </div>
-            <span style={{fontSize:12,fontWeight:700,padding:"3px 10px",borderRadius:20,
-              background: korDday==="접수중!" ? "#2e6b2e" : "#e8f5e0",
-              color: korDday==="접수중!" ? "#fff" : COURSE_COLORS["코리아"]}}>
-              {korDday}
-            </span>
-          </div>
-          {/* 크리스탈밸리 */}
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:COURSE_BG["크리스탈밸리"],borderRadius:9,padding:"8px 12px"}}>
-            <div>
-              <span style={{fontSize:12,fontWeight:700,color:COURSE_COLORS["크리스탈밸리"]}}>크리스탈밸리</span>
-              <span style={{fontSize:11,color:"#4a6741",marginLeft:6}}>매월 25~28일 (D-2개월)</span>
-            </div>
-            <span style={{fontSize:12,fontWeight:700,padding:"3px 10px",borderRadius:20,
-              background: crystalDday==="접수중!" ? "#1a3a6e" : "#e3ecfa",
-              color: crystalDday==="접수중!" ? "#fff" : COURSE_COLORS["크리스탈밸리"]}}>
-              {crystalDday}
-            </span>
-          </div>
-          {/* 설해원 */}
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:COURSE_BG["설해원"],borderRadius:9,padding:"8px 12px"}}>
-            <div>
-              <span style={{fontSize:12,fontWeight:700,color:COURSE_COLORS["설해원"]}}>설해원</span>
-              <span style={{fontSize:11,color:"#4a6741",marginLeft:6}}>매월 25~28일 (D-2개월)</span>
-            </div>
-            <span style={{fontSize:12,fontWeight:700,padding:"3px 10px",borderRadius:20,
-              background: crystalDday==="접수중!" ? "#8b1a1a" : "#faeaea",
-              color: crystalDday==="접수중!" ? "#fff" : COURSE_COLORS["설해원"]}}>
-              {crystalDday}
-            </span>
+      <div style={{minHeight:480,background:"linear-gradient(160deg,#e8f5e0 0%,#f0f7eb 100%)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem 1rem"}}>
+        <div style={{fontSize:48,marginBottom:8}}>⛳</div>
+        <h1 style={{fontSize:26,fontWeight:700,color:"#1a4a1a",margin:"0 0 6px"}}>SK스퀘어 골프예약 신청</h1>
+        <p style={{color:"#4a6741",fontSize:15,margin:"0 0 16px",textAlign:"center"}}>임원(비서)전용 예약신청 페이지입니다.</p>
+        <div style={{background:"#fff",border:"1px solid #c8e0be",borderRadius:14,padding:"14px 20px",marginBottom:24,width:"100%",maxWidth:380,boxSizing:"border-box"}}>
+          <p style={{fontSize:12,fontWeight:700,color:"#1a4a1a",margin:"0 0 10px",textAlign:"center"}}>📅 골프장 접수 일정</p>
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            {[["코리아","코리아CC","매월 5~10일 (D-1개월)",korDday],["크리스탈밸리","크리스탈밸리","매월 25~28일 (D-2개월)",crystalDday],["설해원","설해원","매월 25~28일 (D-2개월)",crystalDday]].map(([key,name,desc,dday])=>(
+              <div key={key} style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:COURSE_BG[key],borderRadius:9,padding:"8px 12px"}}>
+                <div>
+                  <span style={{fontSize:12,fontWeight:700,color:COURSE_COLORS[key]}}>{name}</span>
+                  <span style={{fontSize:11,color:"#4a6741",marginLeft:6}}>{desc}</span>
+                </div>
+                <span style={{fontSize:12,fontWeight:700,padding:"3px 10px",borderRadius:20,
+                  background:dday==="접수중!"?COURSE_COLORS[key]:"transparent",
+                  color:dday==="접수중!"?"#fff":COURSE_COLORS[key],
+                  border:`1px solid ${COURSE_COLORS[key]}`}}>
+                  {dday}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
+        <div style={{display:"flex",gap:10,flexWrap:"wrap",justifyContent:"center"}}>
+          <button onClick={()=>setPage("form")} style={{padding:"12px 28px",background:"#2e6b2e",color:"#fff",border:"none",borderRadius:10,fontSize:15,fontWeight:600,cursor:"pointer"}}>예약 신청하기</button>
+          <button onClick={()=>setPage("lookup")} style={{padding:"12px 24px",background:"#fff",color:"#2e6b2e",border:"1.5px solid #2e6b2e",borderRadius:10,fontSize:15,fontWeight:500,cursor:"pointer"}}>내 예약 확인</button>
+          <button onClick={()=>setPage("adminLogin")} style={{padding:"12px 20px",background:"#fff",color:"#555",border:"1px solid #c8d8c0",borderRadius:10,fontSize:14,cursor:"pointer"}}>담당자 로그인</button>
+        </div>
       </div>
+    );
+  }
 
-      <div style={{display:"flex",gap:10,flexWrap:"wrap",justifyContent:"center"}}>
-        <button onClick={()=>setPage("form")} style={{padding:"12px 28px",background:"#2e6b2e",color:"#fff",border:"none",borderRadius:10,fontSize:15,fontWeight:600,cursor:"pointer"}}>예약 신청하기</button>
-        <button onClick={()=>setPage("lookup")} style={{padding:"12px 24px",background:"#fff",color:"#2e6b2e",border:"1.5px solid #2e6b2e",borderRadius:10,fontSize:15,fontWeight:500,cursor:"pointer"}}>내 예약 확인</button>
-        <button onClick={()=>setPage("adminLogin")} style={{padding:"12px 20px",background:"#fff",color:"#555",border:"1px solid #c8d8c0",borderRadius:10,fontSize:14,cursor:"pointer"}}>담당자 로그인</button>
-      </div>
-    </div>
-  );};
-
+  // FORM
   if(page==="form") return (
     <div style={{padding:"1.5rem 1rem",maxWidth:700,margin:"0 auto"}}>
       <button onClick={()=>setPage("home")} style={{background:"none",border:"none",color:"#2e6b2e",cursor:"pointer",fontSize:14,padding:0,marginBottom:16}}>← 홈으로</button>
@@ -367,13 +327,10 @@ function App() {
           {/* 신청자 */}
           <div style={{background:"#eaf4e4",border:"1px solid #b8d8a8",borderRadius:9,padding:"12px",marginBottom:12}}>
             <p style={{fontSize:12,fontWeight:700,color:"#2e6b2e",margin:"0 0 8px"}}>👤 신청자 (비서)</p>
-            <div>
-              <label style={labelStyle}>사번</label>
-              <input type="text" placeholder="사번 입력 시 자동 조회됩니다" value={form.empId}
-                onChange={e=>setF("empId",e.target.value)}
-                style={inputStyle(errors.empId)}/>
-              {errors.empId&&<p style={errStyle}>{errors.empId}</p>}
-            </div>
+            <label style={labelStyle}>사번</label>
+            <input type="text" placeholder="사번 입력 시 자동 조회" value={form.empId}
+              onChange={e=>setF("empId",e.target.value)} style={inputStyle(errors.empId)}/>
+            {errors.empId&&<p style={errStyle}>{errors.empId}</p>}
             {empLoading&&<p style={{fontSize:11,color:"#6a8e61",margin:"4px 0 0"}}>조회 중...</p>}
             {form.name&&<div style={{display:"flex",gap:10,background:"#fff",borderRadius:7,padding:"8px 10px",border:"1px solid #c8e0be",fontSize:13,marginTop:6}}>
               <span style={{color:"#4a6741"}}>이름: <strong>{form.name}</strong></span>
@@ -384,13 +341,10 @@ function App() {
           {/* 이용자 */}
           <div style={{background:"#e8eefa",border:"1px solid #b8c8f0",borderRadius:9,padding:"12px",marginBottom:12}}>
             <p style={{fontSize:12,fontWeight:700,color:"#1a3a6e",margin:"0 0 8px"}}>👑 이용자 (임원)</p>
-            <div>
-              <label style={labelStyle}>사번</label>
-              <input type="text" placeholder="사번 입력 시 자동 조회됩니다" value={form.userEmpId}
-                onChange={e=>setF("userEmpId",e.target.value)}
-                style={inputStyle(errors.userEmpId)}/>
-              {errors.userEmpId&&<p style={errStyle}>{errors.userEmpId}</p>}
-            </div>
+            <label style={labelStyle}>사번</label>
+            <input type="text" placeholder="사번 입력 시 자동 조회" value={form.userEmpId}
+              onChange={e=>setF("userEmpId",e.target.value)} style={inputStyle(errors.userEmpId)}/>
+            {errors.userEmpId&&<p style={errStyle}>{errors.userEmpId}</p>}
             {userEmpLoading&&<p style={{fontSize:11,color:"#6a8e61",margin:"4px 0 0"}}>조회 중...</p>}
             {form.userEmpName&&<div style={{display:"flex",gap:10,background:"#fff",borderRadius:7,padding:"8px 10px",border:"1px solid #b8c8f0",fontSize:13,marginTop:6}}>
               <span style={{color:"#1a3a6e"}}>이름: <strong>{form.userEmpName}</strong></span>
@@ -403,8 +357,7 @@ function App() {
             <div>
               <label style={labelStyle}>날짜</label>
               <input type="date" value={form.date} min={new Date().toISOString().split("T")[0]}
-                onChange={e=>{const d=e.target.value;setF("date",d);checkDateConflict(d);}}
-                style={inputStyle(errors.date)}/>
+                onChange={e=>{const d=e.target.value;setF("date",d);checkDateConflict(d);}} style={inputStyle(errors.date)}/>
               {errors.date&&<p style={errStyle}>{errors.date}</p>}
             </div>
             <div>
@@ -467,25 +420,14 @@ function App() {
           <div style={{background:"#f3f9ef",border:"1px solid #c8e0be",borderRadius:12,padding:"12px 14px"}}>
             <p style={{fontSize:12,fontWeight:700,color:"#1a4a1a",margin:"0 0 8px"}}>⛳ 골프장별 예약 확정일<br/><span style={{fontSize:10,fontWeight:400,color:"#6a8e61"}}>(이용일 기준)</span></p>
             {(()=>{
-              const today = new Date();
-              const nextMonth = today.getMonth() + 2; // 다음달 기준
-              const nextYear = nextMonth > 12 ? today.getFullYear() + 1 : today.getFullYear();
-              const nm = nextMonth > 12 ? 1 : nextMonth;
-              const exampleDay = 27;
-              // 코리아: 전월 20일
-              const korConfirmMonth = nm - 1 <= 0 ? 12 : nm - 1;
-              const korConfirmYear = nm - 1 <= 0 ? nextYear - 1 : nextYear;
-              // 크리스탈밸리: 전월 2주차 화요일 (8~14일 중 화요일)
-              let crystalTuesday = 8;
-              for(let d=8;d<=14;d++){
-                if(new Date(korConfirmYear, korConfirmMonth-1, d).getDay()===2){ crystalTuesday=d; break; }
-              }
-              // 설해원: 전월 1주차 내 (예시 7일)
-              const seolConfirmMonth = nm - 1 <= 0 ? 12 : nm - 1;
+              const today=new Date(), nm=(today.getMonth()+2)>12?1:today.getMonth()+2;
+              const ny=(today.getMonth()+2)>12?today.getFullYear()+1:today.getFullYear();
+              const cm=nm-1<=0?12:nm-1, cy=nm-1<=0?ny-1:ny;
+              let tue=8; for(let d=8;d<=14;d++){ if(new Date(cy,cm-1,d).getDay()===2){tue=d;break;} }
               return [
-                ["코리아CC","#1a5c2e","#e8f5e0",`전월 20일 확정`,`ex) ${nm}/${exampleDay} 이용일, ${korConfirmMonth}/20 확정`],
-                ["크리스탈밸리","#1a3a6e","#e3ecfa",`전월 2주차 화요일 확정`,`ex) ${nm}/${exampleDay} 이용일, ${korConfirmMonth}/${crystalTuesday} 확정`],
-                ["설해원","#8b1a1a","#faeaea",`전월 1주차 내 확정`,`ex) ${nm}/${exampleDay} 이용일, ${seolConfirmMonth}/7 확정`],
+                ["코리아CC","#1a5c2e","#e8f5e0","전월 20일 확정",`ex) ${nm}/27 이용일, ${cm}/20 확정`],
+                ["크리스탈밸리","#1a3a6e","#e3ecfa","전월 2주차 화요일 확정",`ex) ${nm}/27 이용일, ${cm}/${tue} 확정`],
+                ["설해원","#8b1a1a","#faeaea","전월 1주차 내 확정",`ex) ${nm}/27 이용일, ${cm}/7 확정`],
               ].map(([name,color,bg,desc,ex])=>(
                 <div key={name} style={{display:"flex",flexDirection:"column",background:bg,borderRadius:8,padding:"6px 9px",marginBottom:5}}>
                   <span style={{fontSize:11,fontWeight:700,color}}>{name}</span>
@@ -532,6 +474,7 @@ function App() {
     </div>
   );
 
+  // SUCCESS
   if(page==="success") return (
     <div style={{minHeight:400,display:"flex",alignItems:"center",justifyContent:"center",padding:"2rem 1rem"}}>
       <div style={{maxWidth:380,textAlign:"center",background:"#f3f9ef",border:"1px solid #c8e0be",borderRadius:16,padding:"2.5rem 2rem"}}>
@@ -555,6 +498,7 @@ function App() {
     </div>
   );
 
+  // LOOKUP
   if(page==="lookup") return (
     <div style={{minHeight:400,display:"flex",alignItems:"center",justifyContent:"center",padding:"2rem 1rem"}}>
       <div style={{width:320,background:"#f3f9ef",border:"1px solid #c8e0be",borderRadius:14,padding:"2rem"}}>
@@ -562,13 +506,13 @@ function App() {
         <div style={{textAlign:"center",marginBottom:18}}>
           <div style={{fontSize:32}}>🔍</div>
           <h2 style={{fontSize:17,fontWeight:700,color:"#1a4a1a",margin:"8px 0 0"}}>내 예약 확인</h2>
-          <p style={{fontSize:12,color:"#6a8e61",margin:"6px 0 0"}}>사번 조회 후 비밀번호를 입력해주세요.</p>
+          <p style={{fontSize:12,color:"#6a8e61",margin:"6px 0 0"}}>사번 입력 시 자동 조회됩니다.</p>
         </div>
         <div style={{marginBottom:8}}>
           <label style={labelStyle}>사번</label>
-          <input type="text" placeholder="사번 입력 시 자동 조회됩니다" value={lookupEmpId}
-            onChange={e=>{setLookupEmpId(e.target.value);setLookupError("");setLookupName("");setLookupDept("");}}
-            style={{...inputStyle(false),width:"100%"}}/>
+          <input type="text" placeholder="사번 입력" value={lookupEmpId}
+            onChange={e=>{setLookupEmpId(e.target.value);setLookupError("");}}
+            style={inputStyle(false)}/>
         </div>
         {lookupEmpLoading&&<p style={{fontSize:11,color:"#6a8e61",margin:"4px 0 6px"}}>조회 중...</p>}
         {lookupName&&(
@@ -590,6 +534,7 @@ function App() {
     </div>
   );
 
+  // MY RESERVATION
   if(page==="myReservation") return (
     <div style={{maxWidth:480,margin:"0 auto",padding:"1.5rem 1rem"}}>
       <button onClick={()=>{setPage("home");setLookupEmpId("");setLookupName("");setLookupDept("");setLookupPw("");setMyRes(null);setLookupError("");}}
@@ -608,16 +553,14 @@ function App() {
       <p style={{fontSize:13,color:"#4a6741",margin:"0 0 10px"}}>총 <strong>{myRes.length}건</strong>의 예약 내역입니다.</p>
       <div style={{display:"flex",flexDirection:"column",gap:10}}>
         {myRes.map(r=>(
-          <div key={r.id} style={{background:"#fff",border:"1px solid #c8e0be",borderRadius:11,padding:"1rem 1.1rem"}}>
+          <div key={r.id} style={{background:"#fff",border:`1.5px solid ${r.status==="confirmed"?"#1a6e3a":"#c8e0be"}`,borderRadius:11,padding:"1rem 1.1rem",
+            boxShadow:r.status==="confirmed"?"0 0 10px rgba(26,110,58,0.15)":"none"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:6,marginBottom:8}}>
               <span style={{fontSize:12,padding:"2px 10px",borderRadius:10,background:COURSE_BG[r.course],color:COURSE_COLORS[r.course],fontWeight:700}}>{r.course}</span>
               <span style={{fontSize:13,fontWeight:700,padding:"4px 14px",borderRadius:20,
-                background:STATUS[r.status]?.bg||"#eee",
-                color:STATUS[r.status]?.color||"#333",
+                background:STATUS[r.status]?.bg||"#eee",color:STATUS[r.status]?.color||"#333",
                 border:`1.5px solid ${STATUS[r.status]?.color||"#ccc"}`,
-                boxShadow: r.status==="confirmed"?"0 0 8px rgba(26,110,58,0.3)":"none",
-                letterSpacing: r.status==="confirmed"?"0.5px":"0"
-              }}>
+                boxShadow:r.status==="confirmed"?"0 0 8px rgba(26,110,58,0.3)":"none"}}>
                 {r.status==="confirmed"?"✅ 확정":r.status==="cancelled"?"❌ 취소":"⏳ 대기중"}
               </span>
             </div>
@@ -641,6 +584,7 @@ function App() {
     </div>
   );
 
+  // ADMIN LOGIN
   if(page==="adminLogin") return (
     <div style={{minHeight:400,display:"flex",alignItems:"center",justifyContent:"center",padding:"2rem 1rem"}}>
       <div style={{width:300,background:"#f3f9ef",border:"1px solid #c8e0be",borderRadius:14,padding:"2rem"}}>
@@ -662,7 +606,7 @@ function App() {
   );
 
   // ADMIN
-  const adminAlerts = getAdminAlerts();
+  const adminAlerts=getAdminAlerts();
   return (
     <div style={{padding:"1.2rem 1rem",maxWidth:780,margin:"0 auto"}}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14,flexWrap:"wrap",gap:8}}>
@@ -689,20 +633,17 @@ function App() {
           <button onClick={()=>{setPage("home");setAdminPw("");}} style={{padding:"7px 14px",background:"none",border:"1px solid #c8e0be",borderRadius:8,color:"#4a6741",fontSize:13,cursor:"pointer"}}>로그아웃</button>
         </div>
       </div>
-
       {/* 알림 배너 */}
       <div style={{marginBottom:16}}>
-        {adminAlerts.length===0 ? (
+        {adminAlerts.length===0?(
           <div style={{background:"#f3f9ef",border:"1px solid #c8e0be",borderRadius:10,padding:"10px 14px",fontSize:12,color:"#4a6741"}}>
             ✅ 오늘은 신청기간 및 확정일 알림이 없습니다.
           </div>
-        ) : adminAlerts.map((a,i)=>(
+        ):adminAlerts.map((a,i)=>(
           <div key={i} style={{background:a.bg,border:`1px solid ${a.color}40`,borderLeft:`4px solid ${a.color}`,borderRadius:10,padding:"12px 14px",display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:10,marginBottom:8}}>
             <div>
               <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
-                <span style={{fontSize:11,fontWeight:700,padding:"2px 8px",borderRadius:10,background:a.color,color:"#fff"}}>
-                  {a.type==="신청기간"?"📝 신청기간":"✅ 확정일"}
-                </span>
+                <span style={{fontSize:11,fontWeight:700,padding:"2px 8px",borderRadius:10,background:a.color,color:"#fff"}}>{a.type==="신청기간"?"📝 신청기간":"✅ 확정일"}</span>
                 <span style={{fontSize:12,fontWeight:700,color:a.color}}>{a.course}</span>
               </div>
               <p style={{fontSize:12,color:"#333",margin:0,lineHeight:1.6,whiteSpace:"pre-line"}}>{a.msg}</p>
@@ -714,7 +655,6 @@ function App() {
           </div>
         ))}
       </div>
-
       <div style={{display:"flex",gap:14,alignItems:"flex-start",flexWrap:"wrap"}}>
         <div style={{flex:1,minWidth:280}}>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:14}}>
