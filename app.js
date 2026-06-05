@@ -265,21 +265,79 @@ function App() {
     </div>
   );
 
-  if(page==="home") return (
+  if(page==="home") {
+    const today = new Date();
+    const month = today.getMonth() + 1;
+    const day = today.getDate();
+
+    // 코리아 접수일정: 매월 5~10일 (다음 접수일까지 D-day)
+    let korDday = "";
+    if(day < 5) korDday = `D-${5-day}`;
+    else if(day <= 10) korDday = "접수중!";
+    else { const daysInMonth = new Date(today.getFullYear(), month, 0).getDate(); korDday = `D-${daysInMonth - day + 5}`; }
+
+    // 크리스탈밸리/설해원: 매월 25~28일
+    let crystalDday = "";
+    if(day < 25) crystalDday = `D-${25-day}`;
+    else if(day <= 28) crystalDday = "접수중!";
+    else { const daysInMonth2 = new Date(today.getFullYear(), month, 0).getDate(); crystalDday = `D-${daysInMonth2 - day + 25}`; }
+
+    return (
     <div style={{minHeight:480,background:"linear-gradient(160deg,#e8f5e0 0%,#f0f7eb 100%)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem 1rem"}}>
       <div style={{fontSize:48,marginBottom:8}}>⛳</div>
       <h1 style={{fontSize:26,fontWeight:700,color:"#1a4a1a",margin:"0 0 6px"}}>SK스퀘어 골프예약 신청</h1>
-      <p style={{color:"#4a6741",fontSize:15,margin:"0 0 10px",textAlign:"center"}}>임원(비서)전용 예약신청 페이지입니다.</p>
-      <div style={{display:"flex",gap:8,marginBottom:28}}>
-        {COURSES.map(c=><span key={c} style={{fontSize:12,padding:"3px 12px",borderRadius:20,background:COURSE_BG[c],color:COURSE_COLORS[c],fontWeight:600}}>{c}</span>)}
+      <p style={{color:"#4a6741",fontSize:15,margin:"0 0 16px",textAlign:"center"}}>임원(비서)전용 예약신청 페이지입니다.</p>
+
+      {/* 접수일정 */}
+      <div style={{background:"#fff",border:"1px solid #c8e0be",borderRadius:14,padding:"14px 20px",marginBottom:24,width:"100%",maxWidth:380,boxSizing:"border-box"}}>
+        <p style={{fontSize:12,fontWeight:700,color:"#1a4a1a",margin:"0 0 10px",textAlign:"center"}}>📅 골프장 접수 일정</p>
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          {/* 코리아 */}
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:COURSE_BG["코리아"],borderRadius:9,padding:"8px 12px"}}>
+            <div>
+              <span style={{fontSize:12,fontWeight:700,color:COURSE_COLORS["코리아"]}}>코리아CC</span>
+              <span style={{fontSize:11,color:"#4a6741",marginLeft:6}}>매월 5~10일 (D-1개월)</span>
+            </div>
+            <span style={{fontSize:12,fontWeight:700,padding:"3px 10px",borderRadius:20,
+              background: korDday==="접수중!" ? "#2e6b2e" : "#e8f5e0",
+              color: korDday==="접수중!" ? "#fff" : COURSE_COLORS["코리아"]}}>
+              {korDday}
+            </span>
+          </div>
+          {/* 크리스탈밸리 */}
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:COURSE_BG["크리스탈밸리"],borderRadius:9,padding:"8px 12px"}}>
+            <div>
+              <span style={{fontSize:12,fontWeight:700,color:COURSE_COLORS["크리스탈밸리"]}}>크리스탈밸리</span>
+              <span style={{fontSize:11,color:"#4a6741",marginLeft:6}}>매월 25~28일 (D-2개월)</span>
+            </div>
+            <span style={{fontSize:12,fontWeight:700,padding:"3px 10px",borderRadius:20,
+              background: crystalDday==="접수중!" ? "#1a3a6e" : "#e3ecfa",
+              color: crystalDday==="접수중!" ? "#fff" : COURSE_COLORS["크리스탈밸리"]}}>
+              {crystalDday}
+            </span>
+          </div>
+          {/* 설해원 */}
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:COURSE_BG["설해원"],borderRadius:9,padding:"8px 12px"}}>
+            <div>
+              <span style={{fontSize:12,fontWeight:700,color:COURSE_COLORS["설해원"]}}>설해원</span>
+              <span style={{fontSize:11,color:"#4a6741",marginLeft:6}}>매월 25~28일 (D-2개월)</span>
+            </div>
+            <span style={{fontSize:12,fontWeight:700,padding:"3px 10px",borderRadius:20,
+              background: crystalDday==="접수중!" ? "#8b1a1a" : "#faeaea",
+              color: crystalDday==="접수중!" ? "#fff" : COURSE_COLORS["설해원"]}}>
+              {crystalDday}
+            </span>
+          </div>
+        </div>
       </div>
+
       <div style={{display:"flex",gap:10,flexWrap:"wrap",justifyContent:"center"}}>
         <button onClick={()=>setPage("form")} style={{padding:"12px 28px",background:"#2e6b2e",color:"#fff",border:"none",borderRadius:10,fontSize:15,fontWeight:600,cursor:"pointer"}}>예약 신청하기</button>
         <button onClick={()=>setPage("lookup")} style={{padding:"12px 24px",background:"#fff",color:"#2e6b2e",border:"1.5px solid #2e6b2e",borderRadius:10,fontSize:15,fontWeight:500,cursor:"pointer"}}>내 예약 확인</button>
         <button onClick={()=>setPage("adminLogin")} style={{padding:"12px 20px",background:"#fff",color:"#555",border:"1px solid #c8d8c0",borderRadius:10,fontSize:14,cursor:"pointer"}}>담당자 로그인</button>
       </div>
     </div>
-  );
+  );};
 
   if(page==="form") return (
     <div style={{padding:"1.5rem 1rem",maxWidth:700,margin:"0 auto"}}>
