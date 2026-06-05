@@ -235,7 +235,12 @@ function App() {
     try {
       const params = new URLSearchParams({action:"updateStatus",id,status});
       await fetch(`${API_URL}?${params}`);
+      // 기존 데이터를 유지하면서 status만 변경
       setReservations(prev=>prev.map(r=>r.id===id?{...r,status}:r));
+      // 구글시트에서 최신 데이터 다시 불러오기
+      const res = await fetch(`${API_URL}?action=getAll`);
+      const data = await res.json();
+      if(Array.isArray(data)) setReservations(data);
     } catch(e){ console.error(e); }
   };
 
