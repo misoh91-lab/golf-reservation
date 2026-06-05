@@ -561,7 +561,7 @@ function App() {
                 background:STATUS[r.status]?.bg||"#eee",color:STATUS[r.status]?.color||"#333",
                 border:`1.5px solid ${STATUS[r.status]?.color||"#ccc"}`,
                 boxShadow:r.status==="confirmed"?"0 0 8px rgba(26,110,58,0.3)":"none"}}>
-                {r.status==="confirmed"?"✅ 확정":r.status==="cancelled"?"❌ 취소":"⏳ 대기중"}
+                {r.status==="confirmed"?"상태 : ✅ 확정":r.status==="cancelled"?"상태 : ❌ 취소":"상태 : ⏳ 대기중"}
               </span>
             </div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:8}}>
