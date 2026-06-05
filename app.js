@@ -367,23 +367,15 @@ function App() {
           {/* 신청자 */}
           <div style={{background:"#eaf4e4",border:"1px solid #b8d8a8",borderRadius:9,padding:"12px",marginBottom:12}}>
             <p style={{fontSize:12,fontWeight:700,color:"#2e6b2e",margin:"0 0 8px"}}>👤 신청자 (비서)</p>
-            <div style={{display:"grid",gridTemplateColumns:"1fr auto",gap:8,marginBottom:6}}>
-              <div>
-                <label style={labelStyle}>사번</label>
-                <input type="text" placeholder="사번 입력" value={form.empId}
-                  onChange={e=>setF("empId",e.target.value)}
-                  onKeyDown={e=>{if(e.key==="Enter")fetchEmployee(form.empId,"applicant");}}
-                  style={inputStyle(errors.empId)}/>
-                {errors.empId&&<p style={errStyle}>{errors.empId}</p>}
-              </div>
-              <div style={{display:"flex",alignItems:"flex-end"}}>
-                <button onClick={()=>fetchEmployee(form.empId,"applicant")}
-                  style={{padding:"9px 12px",background:"#2e6b2e",color:"#fff",border:"none",borderRadius:8,fontSize:13,cursor:"pointer"}}>
-                  {empLoading?"조회중...":"조회"}
-                </button>
-              </div>
+            <div>
+              <label style={labelStyle}>사번</label>
+              <input type="text" placeholder="사번 입력 시 자동 조회됩니다" value={form.empId}
+                onChange={e=>setF("empId",e.target.value)}
+                style={inputStyle(errors.empId)}/>
+              {errors.empId&&<p style={errStyle}>{errors.empId}</p>}
             </div>
-            {form.name&&<div style={{display:"flex",gap:10,background:"#fff",borderRadius:7,padding:"8px 10px",border:"1px solid #c8e0be",fontSize:13}}>
+            {empLoading&&<p style={{fontSize:11,color:"#6a8e61",margin:"4px 0 0"}}>조회 중...</p>}
+            {form.name&&<div style={{display:"flex",gap:10,background:"#fff",borderRadius:7,padding:"8px 10px",border:"1px solid #c8e0be",fontSize:13,marginTop:6}}>
               <span style={{color:"#4a6741"}}>이름: <strong>{form.name}</strong></span>
               <span style={{color:"#4a6741"}}>부서: <strong>{form.dept}</strong></span>
             </div>}
@@ -392,23 +384,15 @@ function App() {
           {/* 이용자 */}
           <div style={{background:"#e8eefa",border:"1px solid #b8c8f0",borderRadius:9,padding:"12px",marginBottom:12}}>
             <p style={{fontSize:12,fontWeight:700,color:"#1a3a6e",margin:"0 0 8px"}}>👑 이용자 (임원)</p>
-            <div style={{display:"grid",gridTemplateColumns:"1fr auto",gap:8,marginBottom:6}}>
-              <div>
-                <label style={labelStyle}>사번</label>
-                <input type="text" placeholder="사번 입력" value={form.userEmpId}
-                  onChange={e=>setF("userEmpId",e.target.value)}
-                  onKeyDown={e=>{if(e.key==="Enter")fetchEmployee(form.userEmpId,"user");}}
-                  style={inputStyle(errors.userEmpId)}/>
-                {errors.userEmpId&&<p style={errStyle}>{errors.userEmpId}</p>}
-              </div>
-              <div style={{display:"flex",alignItems:"flex-end"}}>
-                <button onClick={()=>fetchEmployee(form.userEmpId,"user")}
-                  style={{padding:"9px 12px",background:"#1a3a6e",color:"#fff",border:"none",borderRadius:8,fontSize:13,cursor:"pointer"}}>
-                  {userEmpLoading?"조회중...":"조회"}
-                </button>
-              </div>
+            <div>
+              <label style={labelStyle}>사번</label>
+              <input type="text" placeholder="사번 입력 시 자동 조회됩니다" value={form.userEmpId}
+                onChange={e=>setF("userEmpId",e.target.value)}
+                style={inputStyle(errors.userEmpId)}/>
+              {errors.userEmpId&&<p style={errStyle}>{errors.userEmpId}</p>}
             </div>
-            {form.userEmpName&&<div style={{display:"flex",gap:10,background:"#fff",borderRadius:7,padding:"8px 10px",border:"1px solid #b8c8f0",fontSize:13}}>
+            {userEmpLoading&&<p style={{fontSize:11,color:"#6a8e61",margin:"4px 0 0"}}>조회 중...</p>}
+            {form.userEmpName&&<div style={{display:"flex",gap:10,background:"#fff",borderRadius:7,padding:"8px 10px",border:"1px solid #b8c8f0",fontSize:13,marginTop:6}}>
               <span style={{color:"#1a3a6e"}}>이름: <strong>{form.userEmpName}</strong></span>
               <span style={{color:"#1a3a6e"}}>부서: <strong>{form.userDept}</strong></span>
             </div>}
@@ -582,16 +566,11 @@ function App() {
         </div>
         <div style={{marginBottom:8}}>
           <label style={labelStyle}>사번</label>
-          <div style={{display:"flex",gap:8}}>
-            <input type="text" placeholder="사번 입력" value={lookupEmpId}
-              onChange={e=>{setLookupEmpId(e.target.value);setLookupError("");setLookupName("");setLookupDept("");}}
-              onKeyDown={e=>{if(e.key==="Enter")fetchLookupEmployee();}}
-              style={{...inputStyle(false),flex:1}}/>
-            <button onClick={fetchLookupEmployee} style={{padding:"9px 12px",background:"#2e6b2e",color:"#fff",border:"none",borderRadius:8,fontSize:13,cursor:"pointer"}}>
-              {lookupEmpLoading?"조회중...":"조회"}
-            </button>
-          </div>
+          <input type="text" placeholder="사번 입력 시 자동 조회됩니다" value={lookupEmpId}
+            onChange={e=>{setLookupEmpId(e.target.value);setLookupError("");setLookupName("");setLookupDept("");}}
+            style={{...inputStyle(false),width:"100%"}}/>
         </div>
+        {lookupEmpLoading&&<p style={{fontSize:11,color:"#6a8e61",margin:"4px 0 6px"}}>조회 중...</p>}
         {lookupName&&(
           <div style={{display:"flex",gap:10,background:"#f3f9ef",borderRadius:7,padding:"8px 10px",border:"1px solid #c8e0be",fontSize:13,marginBottom:10}}>
             <span style={{color:"#4a6741"}}>이름: <strong>{lookupName}</strong></span>
