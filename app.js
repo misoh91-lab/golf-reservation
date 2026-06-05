@@ -124,7 +124,26 @@ function App() {
     })();
   }, []);
 
-  const setF = (k,v) => { setForm(f=>({...f,[k]:v})); setErrors(e=>({...e,[k]:""})); };
+  // 신청자 사번 자동조회
+  React.useEffect(()=>{
+    if(!form.empId.trim()) { setForm(f=>({...f,name:"",dept:""})); return; }
+    const timer = setTimeout(()=>fetchEmployee(form.empId,"applicant"), 500);
+    return ()=>clearTimeout(timer);
+  },[form.empId]);
+
+  // 이용자 사번 자동조회
+  React.useEffect(()=>{
+    if(!form.userEmpId.trim()) { setForm(f=>({...f,userEmpName:"",userDept:""})); return; }
+    const timer = setTimeout(()=>fetchEmployee(form.userEmpId,"user"), 500);
+    return ()=>clearTimeout(timer);
+  },[form.userEmpId]);
+
+  // 내 예약확인 사번 자동조회
+  React.useEffect(()=>{
+    if(!lookupEmpId.trim()) { setLookupName(""); setLookupDept(""); return; }
+    const timer = setTimeout(()=>fetchLookupEmployee(), 500);
+    return ()=>clearTimeout(timer);
+  },[lookupEmpId]);
 
   const fetchEmployee = async (empId, type) => {
     if(!empId.trim()) return;
@@ -613,7 +632,15 @@ function App() {
           <div key={r.id} style={{background:"#fff",border:"1px solid #c8e0be",borderRadius:11,padding:"1rem 1.1rem"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:6,marginBottom:8}}>
               <span style={{fontSize:12,padding:"2px 10px",borderRadius:10,background:COURSE_BG[r.course],color:COURSE_COLORS[r.course],fontWeight:700}}>{r.course}</span>
-              <span style={{fontSize:12,fontWeight:600,padding:"3px 10px",borderRadius:20,background:STATUS[r.status]?.bg||"#eee",color:STATUS[r.status]?.color||"#333"}}>{STATUS[r.status]?.label||r.status}</span>
+              <span style={{fontSize:13,fontWeight:700,padding:"4px 14px",borderRadius:20,
+                background:STATUS[r.status]?.bg||"#eee",
+                color:STATUS[r.status]?.color||"#333",
+                border:`1.5px solid ${STATUS[r.status]?.color||"#ccc"}`,
+                boxShadow: r.status==="confirmed"?"0 0 8px rgba(26,110,58,0.3)":"none",
+                letterSpacing: r.status==="confirmed"?"0.5px":"0"
+              }}>
+                {r.status==="confirmed"?"✅ 확정":r.status==="cancelled"?"❌ 취소":"⏳ 대기중"}
+              </span>
             </div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:8}}>
               <div style={{background:"#eaf4e4",borderRadius:7,padding:"6px 10px",fontSize:12}}>
