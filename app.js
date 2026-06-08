@@ -157,22 +157,22 @@ function App() {
     setLookupEmpLoading(false);
   };
 
-  // 자동조회 useEffect (함수 정의 후)
+  // 자동조회 useEffect — 딜레이 1.5초
   React.useEffect(()=>{
     if(!form.empId.trim()){ setForm(f=>({...f,name:"",dept:""})); return; }
-    const t = setTimeout(()=>fetchEmployee(form.empId,"applicant"),500);
+    const t = setTimeout(()=>fetchEmployee(form.empId,"applicant"), 1500);
     return ()=>clearTimeout(t);
   },[form.empId]);
 
   React.useEffect(()=>{
     if(!form.userEmpId.trim()){ setForm(f=>({...f,userEmpName:"",userDept:""})); return; }
-    const t = setTimeout(()=>fetchEmployee(form.userEmpId,"user"),500);
+    const t = setTimeout(()=>fetchEmployee(form.userEmpId,"user"), 1500);
     return ()=>clearTimeout(t);
   },[form.userEmpId]);
 
   React.useEffect(()=>{
     if(!lookupEmpId.trim()){ setLookupName(""); setLookupDept(""); return; }
-    const t = setTimeout(()=>fetchLookupEmployee(lookupEmpId),500);
+    const t = setTimeout(()=>fetchLookupEmployee(lookupEmpId), 1500);
     return ()=>clearTimeout(t);
   },[lookupEmpId]);
 
