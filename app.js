@@ -595,11 +595,11 @@ function App() {
                 </div>
                 {/* 이용일 */}
                 <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
-                  <span style={{fontSize:12,color:"#1a4a1a"}}>{String(r.date||"").replace(/^'/,"").substring(0,10)}</span>
+                  <span style={{fontSize:12,color:"#1a2e1a",fontWeight:600}}>{String(r.date||"").replace(/^'/,"").substring(0,10)}</span>
                 </div>
                 {/* 시간 */}
                 <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
-                  <span style={{fontSize:12,color:"#1a4a1a"}}>{r.time}</span>
+                  <span style={{fontSize:12,color:"#1a2e1a",fontWeight:600}}>{r.time}</span>
                 </div>
                 {/* 진행상태 */}
                 <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
