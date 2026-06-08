@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbz-h-pQ7WX0T0iPPK3mH-QSNvIAGZKIgwyacRKdB7GLvTScn3HzZSZdsVBZJHYObzge/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwuQwm7FCqIUf9AkEEwj348Dx7Oif63Z4T4XWtteG22SAL7nqvFpPo_BL7SvaBOEIWK/exec";
 const ADMIN_PASSWORD = "golf1234";
 const COURSES = ["코리아", "크리스탈밸리", "설해원"];
 const COURSE_COLORS = { "코리아": "#1a5c2e", "크리스탈밸리": "#1a3a6e", "설해원": "#8b1a1a" };
@@ -97,7 +97,8 @@ function App() {
   const [page, setPage] = React.useState("home");
   const [reservations, setReservations] = React.useState([]);
   const [form, setForm] = React.useState({empId:"",name:"",dept:"",empEmail:"",userEmpId:"",userEmpName:"",userDept:"",date:"",time:"",course:"",note:"",pw:"",pwConfirm:""});
-  const [editModal, setEditModal] = React.useState(null); // 수정 모달 {id, date, time, course}
+  const [confirmModal, setConfirmModal] = React.useState(null); // {id} 확정 시 코스 입력 모달
+  const [editModal, setEditModal] = React.useState(null);
   const [errors, setErrors] = React.useState({});
   const [empLoading, setEmpLoading] = React.useState(false);
   const [userEmpLoading, setUserEmpLoading] = React.useState(false);
@@ -267,13 +268,11 @@ function App() {
     } catch(e){ console.error(e); }
   };
 
-  const changeStatus = async (id, status) => {
+  const changeStatus = async (id, status, courseDetail) => {
     try {
-      const params = new URLSearchParams({action:"updateStatus",id,status});
+      const params = new URLSearchParams({action:"updateStatus", id, status});
+      if(courseDetail !== undefined) params.append("course_detail", courseDetail);
       await fetch(`${API_URL}?${params}`);
-      // 기존 데이터를 유지하면서 status만 변경
-      setReservations(prev=>prev.map(r=>r.id===id?{...r,status}:r));
-      // 구글시트에서 최신 데이터 다시 불러오기
       const res = await fetch(`${API_URL}?action=getAll`);
       const data = await res.json();
       if(Array.isArray(data)) setReservations(data);
@@ -632,8 +631,10 @@ function App() {
                 borderTop:i===0?"none":"1px solid #e8f0e4",
                 background:r.status==="confirmed"?"#f3fdf5":r.status==="cancelled"?"#fff8f8":r.status==="cancel_request"?"#fdf3ff":"#fff",
                 boxShadow:r.status==="confirmed"?"inset 3px 0 0 #1a6e3a":r.status==="cancelled"?"inset 3px 0 0 #e53935":r.status==="cancel_request"?"inset 3px 0 0 #7b1fa2":"none"}}>
-                <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
+                {/* 골프장 + 코스 */}
+                <div style={{display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:2}}>
                   <span style={{fontSize:12,fontWeight:600,padding:"2px 10px",borderRadius:10,background:COURSE_BG[r.course],color:COURSE_COLORS[r.course]}}>{r.course}</span>
+                  {r.course_detail&&<span style={{fontSize:10,color:"#6a8e61"}}>{r.course_detail}</span>}
                 </div>
                 <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
                   <span style={{fontSize:12,color:"#1a2e1a",fontWeight:600}}>{String(r.date||"").replace(/^'/,"").substring(0,10)}</span>
@@ -649,9 +650,9 @@ function App() {
                     {r.status==="confirmed"?"✅ 확정":r.status==="cancelled"?"❌ 취소":r.status==="cancel_request"?"🔔 취소요청":"⏳ 대기중"}
                   </span>
                 </div>
-                {/* 취소 버튼 */}
+                {/* 취소 버튼 — 오늘 이후 예약만 표시 */}
                 <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:4}}>
-                  {(r.status==="pending"||r.status==="confirmed")&&(
+                  {(r.status==="pending"||(r.status==="confirmed"&&String(r.date||"").replace(/^'/,"").substring(0,10)>=new Date().toISOString().split("T")[0]))&&(
                     <button onClick={()=>requestCancel(r.id)}
                       style={{padding:"3px 8px",background:"#f3e5f5",color:"#7b1fa2",border:"1px solid #ce93d8",borderRadius:6,fontSize:11,cursor:"pointer"}}>
                       취소요청
@@ -762,7 +763,26 @@ function App() {
           <button onClick={()=>{setPage("home");setAdminPw("");}} style={{padding:"7px 14px",background:"none",border:"1px solid #c8e0be",borderRadius:8,color:"#4a6741",fontSize:13,cursor:"pointer"}}>로그아웃</button>
         </div>
       </div>
-      {/* 알림 배너 */}
+      {/* 확정 팝업 — 코스 입력 */}
+      {confirmModal&&(
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.35)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999}}
+          onClick={()=>setConfirmModal(null)}>
+          <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:14,padding:"2rem",maxWidth:320,width:"90%",boxSizing:"border-box",border:"1px solid #c8e0be"}}>
+            <h3 style={{fontSize:16,fontWeight:700,color:"#1a4a1a",margin:"0 0 6px"}}>✅ 예약 확정</h3>
+            <p style={{fontSize:12,color:"#6a8e61",margin:"0 0 16px"}}>배정 코스를 입력 후 확정해 주세요. (선택)</p>
+            <label style={labelStyle}>배정 코스</label>
+            <input type="text" placeholder="예: 레이크코스 07:45" value={confirmModal.courseDetail}
+              onChange={e=>setConfirmModal(m=>({...m,courseDetail:e.target.value}))}
+              style={{...inputStyle(false),marginBottom:20}}/>
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={()=>{ changeStatus(confirmModal.id,"confirmed",confirmModal.courseDetail); setConfirmModal(null); }}
+                style={{...btnPrimary,flex:1,background:"#2e6b2e"}}>확정</button>
+              <button onClick={()=>setConfirmModal(null)}
+                style={{flex:1,padding:"11px",background:"#f3f3f3",color:"#555",border:"1px solid #ddd",borderRadius:9,fontSize:14,cursor:"pointer"}}>취소</button>
+            </div>
+          </div>
+        </div>
+      )}
       <div style={{marginBottom:16}}>
         {adminAlerts.length===0?(
           <div style={{background:"#f3f9ef",border:"1px solid #c8e0be",borderRadius:10,padding:"10px 14px",fontSize:12,color:"#4a6741"}}>
@@ -825,13 +845,20 @@ function App() {
                 </div>
                 {r.note&&<div style={{marginTop:5,fontSize:12,color:"#7a9e71",background:"#f3f9ef",borderRadius:6,padding:"5px 9px"}}>📝 {r.note}</div>}
                 <div style={{marginTop:10,display:"flex",gap:6,flexWrap:"wrap"}}>
-                  {r.status!=="confirmed"&&r.status!=="cancel_request"&&<button onClick={()=>changeStatus(r.id,"confirmed")} style={{padding:"5px 12px",background:"#e8f5e9",color:"#1a6e3a",border:"1px solid #a5d6a7",borderRadius:7,fontSize:12,cursor:"pointer"}}>확정</button>}
-                  {r.status!=="pending"&&r.status!=="cancelled"&&r.status!=="cancel_request"&&<button onClick={()=>changeStatus(r.id,"pending")} style={{padding:"5px 12px",background:"#fff8e1",color:"#b87d00",border:"1px solid #ffe082",borderRadius:7,fontSize:12,cursor:"pointer"}}>대기중</button>}
+                  {r.status!=="confirmed"&&r.status!=="cancel_request"&&(
+                    <button onClick={()=>setConfirmModal({id:r.id, courseDetail:""})}
+                      style={{padding:"5px 12px",background:"#e8f5e9",color:"#1a6e3a",border:"1px solid #a5d6a7",borderRadius:7,fontSize:12,cursor:"pointer"}}>확정</button>
+                  )}
+                  {r.status!=="pending"&&r.status!=="cancelled"&&r.status!=="cancel_request"&&(
+                    <button onClick={()=>changeStatus(r.id,"pending")} style={{padding:"5px 12px",background:"#fff8e1",color:"#b87d00",border:"1px solid #ffe082",borderRadius:7,fontSize:12,cursor:"pointer"}}>대기중</button>
+                  )}
                   {r.status==="cancel_request"&&<>
                     <button onClick={()=>changeStatus(r.id,"cancelled")} style={{padding:"5px 12px",background:"#ffebee",color:"#b71c1c",border:"1px solid #ffcdd2",borderRadius:7,fontSize:12,cursor:"pointer",fontWeight:600}}>🔔 취소 승인</button>
                     <button onClick={()=>changeStatus(r.id,"pending")} style={{padding:"5px 12px",background:"#fff8e1",color:"#b87d00",border:"1px solid #ffe082",borderRadius:7,fontSize:12,cursor:"pointer"}}>취소 거절</button>
                   </>}
-                  {r.status!=="cancelled"&&r.status!=="cancel_request"&&<button onClick={()=>changeStatus(r.id,"cancelled")} style={{padding:"5px 12px",background:"#ffebee",color:"#b71c1c",border:"1px solid #ffcdd2",borderRadius:7,fontSize:12,cursor:"pointer"}}>취소</button>}
+                  {r.status!=="cancelled"&&r.status!=="cancel_request"&&(
+                    <button onClick={()=>changeStatus(r.id,"cancelled")} style={{padding:"5px 12px",background:"#ffebee",color:"#b71c1c",border:"1px solid #ffcdd2",borderRadius:7,fontSize:12,cursor:"pointer"}}>취소</button>
+                  )}
                 </div>
               </div>
             ))}
