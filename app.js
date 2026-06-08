@@ -541,7 +541,7 @@ function App() {
 
   // MY RESERVATION
   if(page==="myReservation") return (
-    <div style={{maxWidth:480,margin:"0 auto",padding:"1.5rem 1rem"}}>
+    <div style={{maxWidth:680,margin:"0 auto",padding:"1.5rem 1rem"}}>
       <button onClick={()=>{setPage("home");setLookupEmpId("");setLookupName("");setLookupDept("");setLookupPw("");setMyRes(null);setLookupError("");}}
         style={{background:"none",border:"none",color:"#2e6b2e",cursor:"pointer",fontSize:14,padding:0,marginBottom:16}}>← 홈으로</button>
       <div style={{background:"#f3f9ef",border:"1px solid #c8e0be",borderRadius:12,padding:"1.2rem",marginBottom:16}}>
@@ -555,37 +555,61 @@ function App() {
           </div>
         </div>
       </div>
-      <p style={{fontSize:13,color:"#4a6741",margin:"0 0 10px"}}>총 <strong>{myRes.length}건</strong>의 예약 내역입니다.</p>
-      <div style={{display:"flex",flexDirection:"column",gap:10}}>
-        {myRes.map(r=>(
-          <div key={r.id} style={{background:"#fff",border:`1.5px solid ${r.status==="confirmed"?"#1a6e3a":"#c8e0be"}`,borderRadius:11,padding:"1rem 1.1rem",
-            boxShadow:r.status==="confirmed"?"0 0 10px rgba(26,110,58,0.15)":"none"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:6,marginBottom:8}}>
-              <span style={{fontSize:12,padding:"2px 10px",borderRadius:10,background:COURSE_BG[r.course],color:COURSE_COLORS[r.course],fontWeight:700}}>{r.course}</span>
-              <span style={{fontSize:13,fontWeight:700,padding:"4px 14px",borderRadius:20,
+      <p style={{fontSize:13,color:"#4a6741",margin:"0 0 12px"}}>총 <strong>{myRes.length}건</strong>의 예약 내역입니다.</p>
+
+      {/* 테이블 */}
+      <div style={{background:"#fff",border:"1px solid #c8e0be",borderRadius:12,overflow:"hidden"}}>
+        {/* 헤더 */}
+        <div style={{display:"grid",gridTemplateColumns:"1.2fr 1fr 1fr 0.8fr 1.2fr",background:"#2e6b2e",padding:"10px 14px",gap:8}}>
+          {["이용자","골프장","이용일","시간","진행상태"].map(h=>(
+            <div key={h} style={{fontSize:12,fontWeight:700,color:"#fff",textAlign:"center"}}>{h}</div>
+          ))}
+        </div>
+        {/* 행 */}
+        {myRes.map((r,i)=>(
+          <div key={r.id} style={{display:"grid",gridTemplateColumns:"1.2fr 1fr 1fr 0.8fr 1.2fr",padding:"12px 14px",gap:8,
+            borderTop:i===0?"none":"1px solid #e8f0e4",
+            background:r.status==="confirmed"?"#f3fdf5":r.status==="cancelled"?"#fff8f8":"#fff",
+            boxShadow:r.status==="confirmed"?"inset 3px 0 0 #1a6e3a":r.status==="cancelled"?"inset 3px 0 0 #e53935":"inset 3px 0 0 transparent"}}>
+            {/* 이용자 */}
+            <div style={{textAlign:"center"}}>
+              <div style={{fontSize:13,fontWeight:600,color:"#1a3a6e"}}>{r.userEmpName||"-"}</div>
+              <div style={{fontSize:11,color:"#9ab890"}}>{r.userDept||""}</div>
+            </div>
+            {/* 골프장 */}
+            <div style={{textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <span style={{fontSize:12,fontWeight:600,padding:"2px 10px",borderRadius:10,background:COURSE_BG[r.course],color:COURSE_COLORS[r.course]}}>{r.course}</span>
+            </div>
+            {/* 이용일 */}
+            <div style={{textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <span style={{fontSize:12,color:"#1a4a1a"}}>{String(r.date||"").replace(/^'/,"").substring(0,10)}</span>
+            </div>
+            {/* 시간 */}
+            <div style={{textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <span style={{fontSize:12,color:"#1a4a1a"}}>{r.time}</span>
+            </div>
+            {/* 진행상태 */}
+            <div style={{textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <span style={{fontSize:11,fontWeight:700,padding:"4px 10px",borderRadius:20,
                 background:STATUS[r.status]?.bg||"#eee",color:STATUS[r.status]?.color||"#333",
                 border:`1.5px solid ${STATUS[r.status]?.color||"#ccc"}`,
-                boxShadow:r.status==="confirmed"?"0 0 8px rgba(26,110,58,0.3)":"none"}}>
-                {r.status==="confirmed"?"진행상태 : ✅ 확정":r.status==="cancelled"?"진행상태 : ❌ 취소":"진행상태 : ⏳ 대기중"}
+                boxShadow:r.status==="confirmed"?"0 0 6px rgba(26,110,58,0.25)":"none"}}>
+                {r.status==="confirmed"?"✅ 확정":r.status==="cancelled"?"❌ 취소":"⏳ 대기중"}
               </span>
             </div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:8}}>
-              <div style={{background:"#eaf4e4",borderRadius:7,padding:"6px 10px",fontSize:12}}>
-                <div style={{color:"#2e6b2e",fontWeight:600,marginBottom:2}}>👤 신청자</div>
-                <div style={{color:"#1a4a1a"}}>{r.empName||r.name}</div>
-                <div style={{color:"#6a8e61",fontSize:11}}>{r.dept}</div>
-              </div>
-              <div style={{background:"#e8eefa",borderRadius:7,padding:"6px 10px",fontSize:12}}>
-                <div style={{color:"#1a3a6e",fontWeight:600,marginBottom:2}}>👑 이용자</div>
-                <div style={{color:"#1a3a6e"}}>{r.userEmpName||"-"}</div>
-                <div style={{color:"#6a8e61",fontSize:11}}>{r.userDept||"-"}</div>
-              </div>
-            </div>
-            <div style={{fontSize:13,color:"#4a6741",display:"flex",gap:16}}><span>📅 {r.date}</span><span>🕐 {r.time}</span></div>
-            {r.note&&<div style={{marginTop:6,fontSize:12,color:"#7a9e71",background:"#f3f9ef",borderRadius:6,padding:"5px 9px"}}>📝 {r.note}</div>}
           </div>
         ))}
       </div>
+      {/* 요청사항 있는 경우 별도 표시 */}
+      {myRes.some(r=>r.note) && (
+        <div style={{marginTop:12}}>
+          {myRes.filter(r=>r.note).map(r=>(
+            <div key={r.id} style={{background:"#f3f9ef",border:"1px solid #c8e0be",borderRadius:8,padding:"8px 12px",marginBottom:6,fontSize:12,color:"#4a6741"}}>
+              <strong>{String(r.date||"").replace(/^'/,"").substring(0,10)} {r.course}</strong> — 📝 {r.note}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 
