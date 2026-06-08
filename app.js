@@ -157,22 +157,22 @@ function App() {
     setLookupEmpLoading(false);
   };
 
-  // 자동조회 useEffect — 딜레이 1.5초
+  // 자동조회 useEffect — 딜레이 800ms
   React.useEffect(()=>{
     if(!form.empId.trim()){ setForm(f=>({...f,name:"",dept:""})); return; }
-    const t = setTimeout(()=>fetchEmployee(form.empId,"applicant"), 1500);
+    const t = setTimeout(()=>fetchEmployee(form.empId,"applicant"), 800);
     return ()=>clearTimeout(t);
   },[form.empId]);
 
   React.useEffect(()=>{
     if(!form.userEmpId.trim()){ setForm(f=>({...f,userEmpName:"",userDept:""})); return; }
-    const t = setTimeout(()=>fetchEmployee(form.userEmpId,"user"), 1500);
+    const t = setTimeout(()=>fetchEmployee(form.userEmpId,"user"), 800);
     return ()=>clearTimeout(t);
   },[form.userEmpId]);
 
   React.useEffect(()=>{
     if(!lookupEmpId.trim()){ setLookupName(""); setLookupDept(""); return; }
-    const t = setTimeout(()=>fetchLookupEmployee(lookupEmpId), 1500);
+    const t = setTimeout(()=>fetchLookupEmployee(lookupEmpId), 800);
     return ()=>clearTimeout(t);
   },[lookupEmpId]);
 
@@ -334,7 +334,10 @@ function App() {
             <p style={{fontSize:12,fontWeight:700,color:"#2e6b2e",margin:"0 0 8px"}}>👤 신청자 (비서)</p>
             <label style={labelStyle}>사번</label>
             <input type="text" placeholder="사번 입력 시 자동 조회" value={form.empId}
-              onChange={e=>setF("empId",e.target.value)} style={inputStyle(errors.empId)}/>
+              onChange={e=>setF("empId",e.target.value)}
+              onBlur={()=>fetchEmployee(form.empId,"applicant")}
+              onKeyDown={e=>{if(e.key==="Enter")fetchEmployee(form.empId,"applicant");}}
+              style={inputStyle(errors.empId)}/>
             {errors.empId&&<p style={errStyle}>{errors.empId}</p>}
             {empLoading&&<p style={{fontSize:11,color:"#6a8e61",margin:"4px 0 0"}}>조회 중...</p>}
             {form.name&&<div style={{display:"flex",gap:10,background:"#fff",borderRadius:7,padding:"8px 10px",border:"1px solid #c8e0be",fontSize:13,marginTop:6}}>
@@ -348,7 +351,10 @@ function App() {
             <p style={{fontSize:12,fontWeight:700,color:"#1a3a6e",margin:"0 0 8px"}}>👑 이용자 (임원)</p>
             <label style={labelStyle}>사번</label>
             <input type="text" placeholder="사번 입력 시 자동 조회" value={form.userEmpId}
-              onChange={e=>setF("userEmpId",e.target.value)} style={inputStyle(errors.userEmpId)}/>
+              onChange={e=>setF("userEmpId",e.target.value)}
+              onBlur={()=>fetchEmployee(form.userEmpId,"user")}
+              onKeyDown={e=>{if(e.key==="Enter")fetchEmployee(form.userEmpId,"user");}}
+              style={inputStyle(errors.userEmpId)}/>
             {errors.userEmpId&&<p style={errStyle}>{errors.userEmpId}</p>}
             {userEmpLoading&&<p style={{fontSize:11,color:"#6a8e61",margin:"4px 0 0"}}>조회 중...</p>}
             {form.userEmpName&&<div style={{display:"flex",gap:10,background:"#fff",borderRadius:7,padding:"8px 10px",border:"1px solid #b8c8f0",fontSize:13,marginTop:6}}>
@@ -517,6 +523,8 @@ function App() {
           <label style={labelStyle}>사번</label>
           <input type="text" placeholder="사번 입력" value={lookupEmpId}
             onChange={e=>{setLookupEmpId(e.target.value);setLookupError("");}}
+            onBlur={()=>fetchLookupEmployee(lookupEmpId)}
+            onKeyDown={e=>{if(e.key==="Enter")fetchLookupEmployee(lookupEmpId);}}
             style={inputStyle(false)}/>
         </div>
         {lookupEmpLoading&&<p style={{fontSize:11,color:"#6a8e61",margin:"4px 0 6px"}}>조회 중...</p>}
