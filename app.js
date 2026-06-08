@@ -578,9 +578,9 @@ function App() {
               </span>
             </div>
             {/* 컬럼 헤더 */}
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 0.8fr 1.2fr",background:"#2e6b2e",padding:"8px 16px",gap:8}}>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 0.8fr 1.2fr",background:"#c8e0be",padding:"8px 16px",gap:8}}>
               {["골프장","이용일","시간","진행상태"].map(h=>(
-                <div key={h} style={{fontSize:11,fontWeight:700,color:"#fff",textAlign:"center"}}>{h}</div>
+                <div key={h} style={{fontSize:11,fontWeight:700,color:"#2e6b2e",textAlign:"center"}}>{h}</div>
               ))}
             </div>
             {/* 예약 목록 */}
