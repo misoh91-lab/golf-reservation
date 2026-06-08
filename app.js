@@ -557,59 +557,74 @@ function App() {
       </div>
       <p style={{fontSize:13,color:"#4a6741",margin:"0 0 12px"}}>총 <strong>{myRes.length}건</strong>의 예약 내역입니다.</p>
 
-      {/* 테이블 */}
-      <div style={{background:"#fff",border:"1px solid #c8e0be",borderRadius:12,overflow:"hidden"}}>
-        {/* 헤더 */}
-        <div style={{display:"grid",gridTemplateColumns:"1.2fr 1fr 1fr 0.8fr 1.2fr",background:"#2e6b2e",padding:"10px 14px",gap:8}}>
-          {["이용자","골프장","이용일","시간","진행상태"].map(h=>(
-            <div key={h} style={{fontSize:12,fontWeight:700,color:"#fff",textAlign:"center"}}>{h}</div>
-          ))}
-        </div>
-        {/* 행 */}
-        {myRes.map((r,i)=>(
-          <div key={r.id} style={{display:"grid",gridTemplateColumns:"1.2fr 1fr 1fr 0.8fr 1.2fr",padding:"12px 14px",gap:8,
-            borderTop:i===0?"none":"1px solid #e8f0e4",
-            background:r.status==="confirmed"?"#f3fdf5":r.status==="cancelled"?"#fff8f8":"#fff",
-            boxShadow:r.status==="confirmed"?"inset 3px 0 0 #1a6e3a":r.status==="cancelled"?"inset 3px 0 0 #e53935":"inset 3px 0 0 transparent"}}>
-            {/* 이용자 */}
-            <div style={{textAlign:"center"}}>
-              <div style={{fontSize:13,fontWeight:600,color:"#1a3a6e"}}>{r.userEmpName||"-"}</div>
-              <div style={{fontSize:11,color:"#9ab890"}}>{r.userDept||""}</div>
-            </div>
-            {/* 골프장 */}
-            <div style={{textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center"}}>
-              <span style={{fontSize:12,fontWeight:600,padding:"2px 10px",borderRadius:10,background:COURSE_BG[r.course],color:COURSE_COLORS[r.course]}}>{r.course}</span>
-            </div>
-            {/* 이용일 */}
-            <div style={{textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center"}}>
-              <span style={{fontSize:12,color:"#1a4a1a"}}>{String(r.date||"").replace(/^'/,"").substring(0,10)}</span>
-            </div>
-            {/* 시간 */}
-            <div style={{textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center"}}>
-              <span style={{fontSize:12,color:"#1a4a1a"}}>{r.time}</span>
-            </div>
-            {/* 진행상태 */}
-            <div style={{textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center"}}>
-              <span style={{fontSize:11,fontWeight:700,padding:"4px 10px",borderRadius:20,
-                background:STATUS[r.status]?.bg||"#eee",color:STATUS[r.status]?.color||"#333",
-                border:`1.5px solid ${STATUS[r.status]?.color||"#ccc"}`,
-                boxShadow:r.status==="confirmed"?"0 0 6px rgba(26,110,58,0.25)":"none"}}>
-                {r.status==="confirmed"?"✅ 확정":r.status==="cancelled"?"❌ 취소":"⏳ 대기중"}
+      {/* 이용자별 그룹핑 */}
+      {(()=>{
+        // 이용자별로 그룹화
+        const groups = {};
+        myRes.forEach(r=>{
+          const key = r.userEmpName||"-";
+          if(!groups[key]) groups[key] = { name:r.userEmpName||"-", dept:r.userDept||"", items:[] };
+          groups[key].items.push(r);
+        });
+        return Object.values(groups).map((group, gi)=>(
+          <div key={gi} style={{marginBottom:16,background:"#fff",border:"1px solid #c8e0be",borderRadius:12,overflow:"hidden"}}>
+            {/* 이용자 헤더 */}
+            <div style={{background:"#e8eefa",borderBottom:"1px solid #c8d8f0",padding:"10px 16px",display:"flex",alignItems:"center",gap:8}}>
+              <span style={{fontSize:16}}>👑</span>
+              <span style={{fontWeight:700,fontSize:14,color:"#1a3a6e"}}>{group.name}</span>
+              {group.dept&&<span style={{fontSize:12,color:"#6a8e61"}}>({group.dept})</span>}
+              <span style={{marginLeft:"auto",fontSize:12,color:"#6a8e61",background:"#fff",padding:"2px 10px",borderRadius:20,border:"1px solid #c8d8f0"}}>
+                {group.items.length}건
               </span>
             </div>
-          </div>
-        ))}
-      </div>
-      {/* 요청사항 있는 경우 별도 표시 */}
-      {myRes.some(r=>r.note) && (
-        <div style={{marginTop:12}}>
-          {myRes.filter(r=>r.note).map(r=>(
-            <div key={r.id} style={{background:"#f3f9ef",border:"1px solid #c8e0be",borderRadius:8,padding:"8px 12px",marginBottom:6,fontSize:12,color:"#4a6741"}}>
-              <strong>{String(r.date||"").replace(/^'/,"").substring(0,10)} {r.course}</strong> — 📝 {r.note}
+            {/* 컬럼 헤더 */}
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 0.8fr 1.2fr",background:"#2e6b2e",padding:"8px 16px",gap:8}}>
+              {["골프장","이용일","시간","진행상태"].map(h=>(
+                <div key={h} style={{fontSize:11,fontWeight:700,color:"#fff",textAlign:"center"}}>{h}</div>
+              ))}
             </div>
-          ))}
-        </div>
-      )}
+            {/* 예약 목록 */}
+            {group.items.map((r,i)=>(
+              <div key={r.id} style={{display:"grid",gridTemplateColumns:"1fr 1fr 0.8fr 1.2fr",padding:"10px 16px",gap:8,
+                borderTop:i===0?"none":"1px solid #e8f0e4",
+                background:r.status==="confirmed"?"#f3fdf5":r.status==="cancelled"?"#fff8f8":"#fff",
+                boxShadow:r.status==="confirmed"?"inset 3px 0 0 #1a6e3a":r.status==="cancelled"?"inset 3px 0 0 #e53935":"none"}}>
+                {/* 골프장 */}
+                <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  <span style={{fontSize:12,fontWeight:600,padding:"2px 10px",borderRadius:10,background:COURSE_BG[r.course],color:COURSE_COLORS[r.course]}}>{r.course}</span>
+                </div>
+                {/* 이용일 */}
+                <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  <span style={{fontSize:12,color:"#1a4a1a"}}>{String(r.date||"").replace(/^'/,"").substring(0,10)}</span>
+                </div>
+                {/* 시간 */}
+                <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  <span style={{fontSize:12,color:"#1a4a1a"}}>{r.time}</span>
+                </div>
+                {/* 진행상태 */}
+                <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  <span style={{fontSize:11,fontWeight:700,padding:"3px 10px",borderRadius:20,
+                    background:STATUS[r.status]?.bg||"#eee",color:STATUS[r.status]?.color||"#333",
+                    border:`1.5px solid ${STATUS[r.status]?.color||"#ccc"}`,
+                    boxShadow:r.status==="confirmed"?"0 0 6px rgba(26,110,58,0.25)":"none"}}>
+                    {r.status==="confirmed"?"✅ 확정":r.status==="cancelled"?"❌ 취소":"⏳ 대기중"}
+                  </span>
+                </div>
+              </div>
+            ))}
+            {/* 요청사항 */}
+            {group.items.some(r=>r.note)&&(
+              <div style={{padding:"8px 16px",borderTop:"1px solid #e8f0e4",background:"#fafff8"}}>
+                {group.items.filter(r=>r.note).map(r=>(
+                  <div key={r.id} style={{fontSize:11,color:"#4a6741",marginBottom:3}}>
+                    📝 <strong>{String(r.date||"").replace(/^'/,"").substring(0,10)}</strong> — {r.note}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ));
+      })()}
     </div>
   );
 
