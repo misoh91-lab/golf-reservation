@@ -649,18 +649,12 @@ function App() {
                     {r.status==="confirmed"?"✅ 확정":r.status==="cancelled"?"❌ 취소":r.status==="cancel_request"?"🔔 취소요청":"⏳ 대기중"}
                   </span>
                 </div>
-                {/* 수정/취소 버튼 */}
+                {/* 취소 버튼 */}
                 <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:4}}>
-                  {(r.status==="pending")&&(
-                    <button onClick={()=>setEditModal({id:r.id,date:String(r.date||"").replace(/^'/,"").substring(0,10),time:r.time,course:r.course})}
-                      style={{padding:"3px 8px",background:"#e3ecfa",color:"#1a3a6e",border:"1px solid #b8c8f0",borderRadius:6,fontSize:11,cursor:"pointer"}}>
-                      수정
-                    </button>
-                  )}
                   {(r.status==="pending"||r.status==="confirmed")&&(
                     <button onClick={()=>requestCancel(r.id)}
                       style={{padding:"3px 8px",background:"#f3e5f5",color:"#7b1fa2",border:"1px solid #ce93d8",borderRadius:6,fontSize:11,cursor:"pointer"}}>
-                      취소
+                      취소요청
                     </button>
                   )}
                 </div>
