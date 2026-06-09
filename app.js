@@ -806,63 +806,122 @@ function App() {
       </div>
       <div style={{display:"flex",gap:14,alignItems:"flex-start",flexWrap:"wrap"}}>
         <div style={{flex:1,minWidth:280}}>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:14}}>
-            {[["전체",reservations.length,"#1a4a1a"],["대기중",reservations.filter(r=>r.status==="pending").length,"#b87d00"],["확정",reservations.filter(r=>r.status==="confirmed").length,"#1a6e3a"]].map(([l,c,col])=>(
+          {/* 요약 카드 */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:8,marginBottom:14}}>
+            {[["전체",reservations.length,"#1a4a1a"],["대기중",reservations.filter(r=>r.status==="pending").length,"#b87d00"],["확정",reservations.filter(r=>r.status==="confirmed").length,"#1a6e3a"],["취소요청",reservations.filter(r=>r.status==="cancel_request").length,"#7b1fa2"],["취소",reservations.filter(r=>r.status==="cancelled").length,"#b71c1c"]].map(([l,c,col])=>(
               <div key={l} style={{background:"#f3f9ef",border:"1px solid #c8e0be",borderRadius:10,padding:"10px",textAlign:"center"}}>
-                <div style={{fontSize:20,fontWeight:700,color:col}}>{c}</div>
-                <div style={{fontSize:11,color:"#6a8e61",marginTop:1}}>{l}</div>
+                <div style={{fontSize:18,fontWeight:700,color:col}}>{c}</div>
+                <div style={{fontSize:10,color:"#6a8e61",marginTop:1}}>{l}</div>
               </div>
             ))}
           </div>
-          <div style={{display:"flex",gap:6,marginBottom:10,flexWrap:"wrap"}}>
-            {[["all","전체"],["pending","대기중"],["confirmed","확정"],["cancelled","취소"]].map(([v,l])=>(
+
+          {/* 필터 */}
+          <div style={{display:"flex",gap:6,marginBottom:12,flexWrap:"wrap"}}>
+            {[["all","전체"],["pending","대기중"],["confirmed","확정"],["cancel_request","취소요청"],["cancelled","취소"]].map(([v,l])=>(
               <button key={v} onClick={()=>setFilterStatus(v)} style={{padding:"5px 12px",borderRadius:20,border:`1px solid ${filterStatus===v?"#2e6b2e":"#c8e0be"}`,background:filterStatus===v?"#2e6b2e":"#fff",color:filterStatus===v?"#fff":"#4a6741",fontSize:12,cursor:"pointer"}}>{l}</button>
             ))}
             {calSel&&<button onClick={()=>setCalSel("")} style={{padding:"5px 12px",borderRadius:20,border:"1px solid #e8b0b0",background:"#fff5f5",color:"#b71c1c",fontSize:12,cursor:"pointer"}}>{calSel} ✕</button>}
           </div>
-          <div style={{display:"flex",flexDirection:"column",gap:8}}>
-            {filtered.length===0&&<p style={{color:"#9ab890",textAlign:"center",padding:"1.5rem",fontSize:14}}>예약 내역이 없습니다.</p>}
-            {filtered.map(r=>(
-              <div key={r.id} style={{background:"#fff",border:"1px solid #c8e0be",borderRadius:11,padding:"0.9rem 1.1rem"}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:6}}>
-                  <span style={{fontSize:11,padding:"2px 8px",borderRadius:10,background:COURSE_BG[r.course],color:COURSE_COLORS[r.course],fontWeight:600}}>{r.course}</span>
-                  <span style={{fontSize:11,fontWeight:600,padding:"3px 9px",borderRadius:20,background:STATUS[r.status]?.bg||"#eee",color:STATUS[r.status]?.color||"#333"}}>{STATUS[r.status]?.label||r.status}</span>
+
+          {/* 이용자별 그룹핑 테이블 */}
+          {(()=>{
+            if(filtered.length===0) return <p style={{color:"#9ab890",textAlign:"center",padding:"1.5rem",fontSize:14}}>예약 내역이 없습니다.</p>;
+
+            // 이용자별 그룹화
+            const groups = {};
+            filtered.forEach(r=>{
+              const key = r.userEmpName||"-";
+              if(!groups[key]) groups[key]={ name:r.userEmpName||"-", dept:r.userDept||"", items:[] };
+              groups[key].items.push(r);
+            });
+
+            return Object.values(groups).map((group,gi)=>(
+              <div key={gi} style={{marginBottom:16,background:"#fff",border:"1px solid #c8e0be",borderRadius:12,overflow:"hidden"}}>
+                {/* 이용자 헤더 */}
+                <div style={{background:"#e8eefa",borderBottom:"1px solid #c8d8f0",padding:"10px 16px",display:"flex",alignItems:"center",gap:8}}>
+                  <span style={{fontSize:16}}>👑</span>
+                  <span style={{fontWeight:700,fontSize:14,color:"#1a3a6e"}}>{group.name}</span>
+                  {group.dept&&<span style={{fontSize:12,color:"#6a8e61"}}>({group.dept})</span>}
+                  <span style={{marginLeft:"auto",fontSize:12,color:"#6a8e61",background:"#fff",padding:"2px 10px",borderRadius:20,border:"1px solid #c8d8f0"}}>{group.items.length}건</span>
                 </div>
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginTop:8,marginBottom:6}}>
-                  <div style={{background:"#eaf4e4",borderRadius:7,padding:"6px 10px",fontSize:12}}>
-                    <div style={{color:"#2e6b2e",fontWeight:600,marginBottom:2}}>👤 신청자</div>
-                    <div style={{color:"#1a4a1a"}}>{r.empName||r.name}</div>
-                    <div style={{color:"#6a8e61",fontSize:11}}>{r.dept}</div>
+                {/* 컬럼 헤더 */}
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 0.8fr 0.8fr 1.2fr 1.2fr",background:"#c8e0be",padding:"8px 16px",gap:8}}>
+                  {["신청자","골프장","코스","이용일","시간","진행상태","액션"].map(h=>(
+                    <div key={h} style={{fontSize:11,fontWeight:700,color:"#2e6b2e",textAlign:"center"}}>{h}</div>
+                  ))}
+                </div>
+                {/* 예약 목록 */}
+                {group.items.map((r,i)=>(
+                  <div key={r.id} style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 0.8fr 0.8fr 1.2fr 1.2fr",padding:"10px 16px",gap:8,
+                    borderTop:i===0?"none":"1px solid #e8f0e4",
+                    background:r.status==="confirmed"?"#f3fdf5":r.status==="cancelled"?"#fff8f8":r.status==="cancel_request"?"#fdf3ff":"#fff",
+                    boxShadow:r.status==="confirmed"?"inset 3px 0 0 #1a6e3a":r.status==="cancelled"?"inset 3px 0 0 #e53935":r.status==="cancel_request"?"inset 3px 0 0 #7b1fa2":"none"}}>
+                    {/* 신청자 */}
+                    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+                      <span style={{fontSize:12,fontWeight:600,color:"#1a4a1a"}}>{r.empName||r.name}</span>
+                      <span style={{fontSize:10,color:"#9ab890"}}>{r.dept}</span>
+                    </div>
+                    {/* 골프장 */}
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      <span style={{fontSize:11,fontWeight:600,padding:"2px 8px",borderRadius:10,background:COURSE_BG[r.course],color:COURSE_COLORS[r.course]}}>{r.course}</span>
+                    </div>
+                    {/* 코스 */}
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      <span style={{fontSize:11,color:"#4a6741"}}>{r.course_detail||"-"}</span>
+                    </div>
+                    {/* 이용일 */}
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      <span style={{fontSize:11,fontWeight:600,color:"#1a2e1a"}}>{String(r.date||"").replace(/^'/,"").substring(0,10)}</span>
+                    </div>
+                    {/* 시간 */}
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      <span style={{fontSize:11,fontWeight:600,color:"#1a2e1a"}}>{r.time}</span>
+                    </div>
+                    {/* 진행상태 */}
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      <span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:20,
+                        background:STATUS[r.status]?.bg||"#eee",color:STATUS[r.status]?.color||"#333",
+                        border:`1px solid ${STATUS[r.status]?.color||"#ccc"}`}}>
+                        {r.status==="confirmed"?"✅ 확정":r.status==="cancelled"?"❌ 취소":r.status==="cancel_request"?"🔔 취소요청":"⏳ 대기중"}
+                      </span>
+                    </div>
+                    {/* 액션 버튼 */}
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:4,flexWrap:"wrap"}}>
+                      {r.status!=="confirmed"&&r.status!=="cancel_request"&&(
+                        <button onClick={()=>setConfirmModal({id:r.id,courseDetail:r.course_detail||""})}
+                          style={{padding:"3px 8px",background:"#e8f5e9",color:"#1a6e3a",border:"1px solid #a5d6a7",borderRadius:6,fontSize:11,cursor:"pointer"}}>확정</button>
+                      )}
+                      {r.status!=="pending"&&r.status!=="cancelled"&&r.status!=="cancel_request"&&(
+                        <button onClick={()=>changeStatus(r.id,"pending")}
+                          style={{padding:"3px 8px",background:"#fff8e1",color:"#b87d00",border:"1px solid #ffe082",borderRadius:6,fontSize:11,cursor:"pointer"}}>대기중</button>
+                      )}
+                      {r.status==="cancel_request"&&<>
+                        <button onClick={()=>changeStatus(r.id,"cancelled")}
+                          style={{padding:"3px 8px",background:"#ffebee",color:"#b71c1c",border:"1px solid #ffcdd2",borderRadius:6,fontSize:11,cursor:"pointer",fontWeight:600}}>취소승인</button>
+                        <button onClick={()=>changeStatus(r.id,"pending")}
+                          style={{padding:"3px 8px",background:"#fff8e1",color:"#b87d00",border:"1px solid #ffe082",borderRadius:6,fontSize:11,cursor:"pointer"}}>거절</button>
+                      </>}
+                      {r.status!=="cancelled"&&r.status!=="cancel_request"&&(
+                        <button onClick={()=>changeStatus(r.id,"cancelled")}
+                          style={{padding:"3px 8px",background:"#ffebee",color:"#b71c1c",border:"1px solid #ffcdd2",borderRadius:6,fontSize:11,cursor:"pointer"}}>취소</button>
+                      )}
+                    </div>
                   </div>
-                  <div style={{background:"#e8eefa",borderRadius:7,padding:"6px 10px",fontSize:12}}>
-                    <div style={{color:"#1a3a6e",fontWeight:600,marginBottom:2}}>👑 이용자</div>
-                    <div style={{color:"#1a3a6e"}}>{r.userEmpName||"-"}</div>
-                    <div style={{color:"#6a8e61",fontSize:11}}>{r.userDept||"-"}</div>
+                ))}
+                {/* 요청사항 */}
+                {group.items.some(r=>r.note)&&(
+                  <div style={{padding:"8px 16px",borderTop:"1px solid #e8f0e4",background:"#fafff8"}}>
+                    {group.items.filter(r=>r.note).map(r=>(
+                      <div key={r.id} style={{fontSize:11,color:"#4a6741",marginBottom:3}}>
+                        📝 <strong>{r.empName||r.name}</strong> ({String(r.date||"").replace(/^'/,"").substring(0,10)}) — {r.note}
+                      </div>
+                    ))}
                   </div>
-                </div>
-                <div style={{fontSize:13,color:"#4a6741",display:"flex",gap:12,flexWrap:"wrap"}}>
-                  <span>📅 {r.date}</span><span>🕐 {r.time}</span>
-                </div>
-                {r.note&&<div style={{marginTop:5,fontSize:12,color:"#7a9e71",background:"#f3f9ef",borderRadius:6,padding:"5px 9px"}}>📝 {r.note}</div>}
-                <div style={{marginTop:10,display:"flex",gap:6,flexWrap:"wrap"}}>
-                  {r.status!=="confirmed"&&r.status!=="cancel_request"&&(
-                    <button onClick={()=>setConfirmModal({id:r.id, courseDetail:""})}
-                      style={{padding:"5px 12px",background:"#e8f5e9",color:"#1a6e3a",border:"1px solid #a5d6a7",borderRadius:7,fontSize:12,cursor:"pointer"}}>확정</button>
-                  )}
-                  {r.status!=="pending"&&r.status!=="cancelled"&&r.status!=="cancel_request"&&(
-                    <button onClick={()=>changeStatus(r.id,"pending")} style={{padding:"5px 12px",background:"#fff8e1",color:"#b87d00",border:"1px solid #ffe082",borderRadius:7,fontSize:12,cursor:"pointer"}}>대기중</button>
-                  )}
-                  {r.status==="cancel_request"&&<>
-                    <button onClick={()=>changeStatus(r.id,"cancelled")} style={{padding:"5px 12px",background:"#ffebee",color:"#b71c1c",border:"1px solid #ffcdd2",borderRadius:7,fontSize:12,cursor:"pointer",fontWeight:600}}>🔔 취소 승인</button>
-                    <button onClick={()=>changeStatus(r.id,"pending")} style={{padding:"5px 12px",background:"#fff8e1",color:"#b87d00",border:"1px solid #ffe082",borderRadius:7,fontSize:12,cursor:"pointer"}}>취소 거절</button>
-                  </>}
-                  {r.status!=="cancelled"&&r.status!=="cancel_request"&&(
-                    <button onClick={()=>changeStatus(r.id,"cancelled")} style={{padding:"5px 12px",background:"#ffebee",color:"#b71c1c",border:"1px solid #ffcdd2",borderRadius:7,fontSize:12,cursor:"pointer"}}>취소</button>
-                  )}
-                </div>
+                )}
               </div>
-            ))}
-          </div>
+            ));
+          })()}
         </div>
         <MiniCalendar reservations={reservations} selectedDate={calSel} onSelect={d=>setCalSel(prev=>prev===d?"":d)}/>
       </div>
