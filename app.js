@@ -337,149 +337,151 @@ function App() {
   }
 
   // FORM
-  if(page==="form") return React.createElement("div", {style:{padding:"1.5rem 1rem",maxWidth:700,margin:"0 auto"}},
-    React.createElement("button", {onClick:function(){setPage("home");}, style:{background:"none",border:"none",color:"#2e6b2e",cursor:"pointer",fontSize:14,padding:0,marginBottom:16}}, "← 홈으로"),
-    React.createElement("div", {style:{display:"flex",gap:16,alignItems:"flex-start",flexWrap:"wrap"}},
-      React.createElement("div", {style:{flex:1,minWidth:260,background:"#f3f9ef",borderRadius:12,padding:"1.4rem",border:"1px solid #c8e0be"}},
-        React.createElement("h2", {style:{fontSize:18,fontWeight:700,color:"#1a4a1a",margin:"0 0 1rem"}}, "⛳ 예약 신청"),
-        // 신청자
-        React.createElement("div", {style:{background:"#eaf4e4",border:"1px solid #b8d8a8",borderRadius:9,padding:"12px",marginBottom:12}},
-          React.createElement("p", {style:{fontSize:12,fontWeight:700,color:"#2e6b2e",margin:"0 0 8px"}}, "👤 신청자"),
-          React.createElement("label", {style:labelStyle}, "사번"),
-          React.createElement("input", {type:"text",placeholder:"사번 입력 시 자동 조회",value:form.empId,onChange:function(e){setF("empId",e.target.value);},onBlur:function(){fetchEmployee(form.empId,"applicant");},onKeyDown:function(e){if(e.key==="Enter")fetchEmployee(form.empId,"applicant");},style:inputStyle(errors.empId)}),
-          errors.empId&&React.createElement("p",{style:errStyle},errors.empId),
-          empLoading&&React.createElement("p",{style:{fontSize:11,color:"#6a8e61",margin:"4px 0 0"}},"조회 중..."),
-          form.name&&React.createElement("div",{style:{display:"flex",gap:10,background:"#fff",borderRadius:7,padding:"8px 10px",border:"1px solid #c8e0be",fontSize:13,marginTop:6}},
-            React.createElement("span",{style:{color:"#4a6741"}},"이름: ",React.createElement("strong",null,form.name)),
-            React.createElement("span",{style:{color:"#4a6741"}},"부서: ",React.createElement("strong",null,form.dept))
-          ),
-          errors.name&&React.createElement("p",{style:errStyle},errors.name)
-        ),
-        // 이용자
-        React.createElement("div", {style:{background:"#e8eefa",border:"1px solid #b8c8f0",borderRadius:9,padding:"12px",marginBottom:12}},
-          React.createElement("p", {style:{fontSize:12,fontWeight:700,color:"#1a3a6e",margin:"0 0 8px"}}, "👑 이용자 (임원)"),
-          React.createElement("label", {style:labelStyle}, "사번"),
-          React.createElement("input", {type:"text",placeholder:"사번 입력 시 자동 조회",value:form.userEmpId,onChange:function(e){setF("userEmpId",e.target.value);},onBlur:function(){fetchEmployee(form.userEmpId,"user");},onKeyDown:function(e){if(e.key==="Enter")fetchEmployee(form.userEmpId,"user");},style:inputStyle(errors.userEmpId)}),
-          errors.userEmpId&&React.createElement("p",{style:errStyle},errors.userEmpId),
-          userEmpLoading&&React.createElement("p",{style:{fontSize:11,color:"#6a8e61",margin:"4px 0 0"}},"조회 중..."),
-          form.userEmpName&&React.createElement("div",{style:{display:"flex",gap:10,background:"#fff",borderRadius:7,padding:"8px 10px",border:"1px solid #b8c8f0",fontSize:13,marginTop:6}},
-            React.createElement("span",{style:{color:"#1a3a6e"}},"이름: ",React.createElement("strong",null,form.userEmpName)),
-            React.createElement("span",{style:{color:"#1a3a6e"}},"부서: ",React.createElement("strong",null,form.userDept))
-          ),
-          errors.userEmpName&&React.createElement("p",{style:errStyle},errors.userEmpName)
-        ),
-        // 날짜/시간
-        React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}},
-          React.createElement("div",null,
-            React.createElement("label",{style:labelStyle},"날짜"),
-            React.createElement("input",{type:"date",value:form.date,min:new Date().toISOString().split("T")[0],onChange:function(e){var d=e.target.value;setF("date",d);checkDateConflict(d);},style:inputStyle(errors.date)}),
-            errors.date&&React.createElement("p",{style:errStyle},errors.date)
-          ),
-          React.createElement("div",null,
-            React.createElement("label",{style:labelStyle},"티오프 시간"),
-            React.createElement("select",{value:form.time,onChange:function(e){setF("time",e.target.value);},style:inputStyle(errors.time)},
-              React.createElement("option",{value:""},"선택"),
-              timeSlots.map(function(t){return React.createElement("option",{key:t,value:t},t);})
+  if(page==="form") {
+    var isMobile = window.innerWidth < 600;
+    return React.createElement("div", {style:{padding:"1.5rem 1rem",maxWidth:700,margin:"0 auto"}},
+      React.createElement("button", {onClick:function(){setPage("home");}, style:{background:"none",border:"none",color:"#2e6b2e",cursor:"pointer",fontSize:14,padding:0,marginBottom:16}}, "← 홈으로"),
+      React.createElement("div", {style:{display:"flex",gap:16,alignItems:"flex-start",flexDirection:isMobile?"column":"row",flexWrap:"wrap"}},
+        React.createElement("div", {style:{flex:1,minWidth:260,background:"#f3f9ef",borderRadius:12,padding:"1.4rem",border:"1px solid #c8e0be",width:"100%",boxSizing:"border-box"}},
+          React.createElement("h2", {style:{fontSize:18,fontWeight:700,color:"#1a4a1a",margin:"0 0 1rem"}}, "⛳ 예약 신청"),
+          // 신청자
+          React.createElement("div", {style:{background:"#eaf4e4",border:"1px solid #b8d8a8",borderRadius:9,padding:"12px",marginBottom:12}},
+            React.createElement("p", {style:{fontSize:12,fontWeight:700,color:"#2e6b2e",margin:"0 0 8px"}}, "👤 신청자"),
+            React.createElement("label", {style:labelStyle}, "사번"),
+            React.createElement("input", {type:"text",placeholder:"사번 입력 시 자동 조회",value:form.empId,onChange:function(e){setF("empId",e.target.value);},onBlur:function(){fetchEmployee(form.empId,"applicant");},onKeyDown:function(e){if(e.key==="Enter")fetchEmployee(form.empId,"applicant");},style:Object.assign({},inputStyle(errors.empId),{fontSize:16})}),
+            errors.empId&&React.createElement("p",{style:errStyle},errors.empId),
+            empLoading&&React.createElement("p",{style:{fontSize:11,color:"#6a8e61",margin:"4px 0 0"}},"조회 중..."),
+            form.name&&React.createElement("div",{style:{display:"flex",gap:10,background:"#fff",borderRadius:7,padding:"8px 10px",border:"1px solid #c8e0be",fontSize:13,marginTop:6}},
+              React.createElement("span",{style:{color:"#4a6741"}},"이름: ",React.createElement("strong",null,form.name)),
+              React.createElement("span",{style:{color:"#4a6741"}},"부서: ",React.createElement("strong",null,form.dept))
             ),
-            errors.time&&React.createElement("p",{style:errStyle},errors.time)
-          )
-        ),
-        // 골프장
-        React.createElement("div",{style:{marginBottom:12}},
-          React.createElement("label",{style:labelStyle},"골프장 선택"),
-          React.createElement("div",{style:{display:"flex",gap:8}},
-            COURSES.map(function(c){
-              return React.createElement("button",{key:c,onClick:function(){setF("course",c);setCourseNotice(COURSE_NOTICES[c]);},
-                style:{flex:1,padding:"9px 6px",borderRadius:8,border:form.course===c?"2px solid "+COURSE_COLORS[c]:"1px solid #c8d8c0",
-                  background:form.course===c?COURSE_BG[c]:"#fff",color:form.course===c?COURSE_COLORS[c]:"#4a6741",
-                  fontWeight:form.course===c?700:400,fontSize:13,cursor:"pointer"}},c);
-            })
+            errors.name&&React.createElement("p",{style:errStyle},errors.name)
           ),
-          errors.course&&React.createElement("p",{style:errStyle},errors.course)
-        ),
-        React.createElement("div",{style:{marginBottom:12}},
-          React.createElement("label",{style:labelStyle},"요청사항 (선택)"),
-          React.createElement("textarea",{placeholder:"기타 문의사항 등",value:form.note,onChange:function(e){setF("note",e.target.value);},rows:2,style:Object.assign({},inputStyle(false),{resize:"vertical"})})
-        ),
-        // 비밀번호
-        React.createElement("div",{style:{background:"#eaf4e4",border:"1px solid #b8d8a8",borderRadius:9,padding:"12px",marginBottom:14}},
-          React.createElement("p",{style:{fontSize:12,color:"#3a6e2a",margin:"0 0 10px",fontWeight:500}},"🔒 예약 조회용 비밀번호를 설정해주세요."),
-          React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}},
+          // 이용자
+          React.createElement("div", {style:{background:"#e8eefa",border:"1px solid #b8c8f0",borderRadius:9,padding:"12px",marginBottom:12}},
+            React.createElement("p", {style:{fontSize:12,fontWeight:700,color:"#1a3a6e",margin:"0 0 8px"}}, "👑 이용자 (임원)"),
+            React.createElement("label", {style:labelStyle}, "사번"),
+            React.createElement("input", {type:"text",placeholder:"사번 입력 시 자동 조회",value:form.userEmpId,onChange:function(e){setF("userEmpId",e.target.value);},onBlur:function(){fetchEmployee(form.userEmpId,"user");},onKeyDown:function(e){if(e.key==="Enter")fetchEmployee(form.userEmpId,"user");},style:Object.assign({},inputStyle(errors.userEmpId),{fontSize:16})}),
+            errors.userEmpId&&React.createElement("p",{style:errStyle},errors.userEmpId),
+            userEmpLoading&&React.createElement("p",{style:{fontSize:11,color:"#6a8e61",margin:"4px 0 0"}},"조회 중..."),
+            form.userEmpName&&React.createElement("div",{style:{display:"flex",gap:10,background:"#fff",borderRadius:7,padding:"8px 10px",border:"1px solid #b8c8f0",fontSize:13,marginTop:6}},
+              React.createElement("span",{style:{color:"#1a3a6e"}},"이름: ",React.createElement("strong",null,form.userEmpName)),
+              React.createElement("span",{style:{color:"#1a3a6e"}},"부서: ",React.createElement("strong",null,form.userDept))
+            ),
+            errors.userEmpName&&React.createElement("p",{style:errStyle},errors.userEmpName)
+          ),
+          // 날짜/시간
+          React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}},
             React.createElement("div",null,
-              React.createElement("label",{style:labelStyle},"비밀번호"),
-              React.createElement("input",{type:"password",placeholder:"4자리 이상",value:form.pw,onChange:function(e){setF("pw",e.target.value);},style:inputStyle(errors.pw)}),
-              errors.pw&&React.createElement("p",{style:errStyle},errors.pw)
+              React.createElement("label",{style:labelStyle},"날짜"),
+              React.createElement("input",{type:"date",value:form.date,min:new Date().toISOString().split("T")[0],onChange:function(e){var d=e.target.value;setF("date",d);checkDateConflict(d);},style:Object.assign({},inputStyle(errors.date),{fontSize:16})}),
+              errors.date&&React.createElement("p",{style:errStyle},errors.date)
             ),
             React.createElement("div",null,
-              React.createElement("label",{style:labelStyle},"비밀번호 확인"),
-              React.createElement("input",{type:"password",placeholder:"동일하게 입력",value:form.pwConfirm,onChange:function(e){setF("pwConfirm",e.target.value);},style:inputStyle(errors.pwConfirm)}),
-              errors.pwConfirm&&React.createElement("p",{style:errStyle},errors.pwConfirm)
+              React.createElement("label",{style:labelStyle},"티오프 시간"),
+              React.createElement("select",{value:form.time,onChange:function(e){setF("time",e.target.value);},style:Object.assign({},inputStyle(errors.time),{fontSize:16})},
+                React.createElement("option",{value:""},"선택"),
+                timeSlots.map(function(t){return React.createElement("option",{key:t,value:t},t);})
+              ),
+              errors.time&&React.createElement("p",{style:errStyle},errors.time)
+            )
+          ),
+          // 골프장
+          React.createElement("div",{style:{marginBottom:12}},
+            React.createElement("label",{style:labelStyle},"골프장 선택"),
+            React.createElement("div",{style:{display:"flex",gap:8}},
+              COURSES.map(function(c){
+                return React.createElement("button",{key:c,onClick:function(){setF("course",c);setCourseNotice(COURSE_NOTICES[c]);},
+                  style:{flex:1,padding:"12px 6px",borderRadius:8,border:form.course===c?"2px solid "+COURSE_COLORS[c]:"1px solid #c8d8c0",
+                    background:form.course===c?COURSE_BG[c]:"#fff",color:form.course===c?COURSE_COLORS[c]:"#4a6741",
+                    fontWeight:form.course===c?700:400,fontSize:isMobile?12:13,cursor:"pointer"}},c);
+              })
+            ),
+            errors.course&&React.createElement("p",{style:errStyle},errors.course)
+          ),
+          React.createElement("div",{style:{marginBottom:12}},
+            React.createElement("label",{style:labelStyle},"요청사항 (선택)"),
+            React.createElement("textarea",{placeholder:"기타 문의사항 등",value:form.note,onChange:function(e){setF("note",e.target.value);},rows:2,style:Object.assign({},inputStyle(false),{resize:"vertical",fontSize:16})})
+          ),
+          // 비밀번호
+          React.createElement("div",{style:{background:"#eaf4e4",border:"1px solid #b8d8a8",borderRadius:9,padding:"12px",marginBottom:14}},
+            React.createElement("p",{style:{fontSize:12,color:"#3a6e2a",margin:"0 0 10px",fontWeight:500}},"🔒 예약 조회용 비밀번호를 설정해주세요."),
+            React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}},
+              React.createElement("div",null,
+                React.createElement("label",{style:labelStyle},"비밀번호"),
+                React.createElement("input",{type:"password",placeholder:"4자리 이상",value:form.pw,onChange:function(e){setF("pw",e.target.value);},style:Object.assign({},inputStyle(errors.pw),{fontSize:16})}),
+                errors.pw&&React.createElement("p",{style:errStyle},errors.pw)
+              ),
+              React.createElement("div",null,
+                React.createElement("label",{style:labelStyle},"비밀번호 확인"),
+                React.createElement("input",{type:"password",placeholder:"동일하게 입력",value:form.pwConfirm,onChange:function(e){setF("pwConfirm",e.target.value);},style:Object.assign({},inputStyle(errors.pwConfirm),{fontSize:16})}),
+                errors.pwConfirm&&React.createElement("p",{style:errStyle},errors.pwConfirm)
+              )
+            )
+          ),
+          React.createElement("button",{onClick:handleSubmit,disabled:saving,style:Object.assign({},btnPrimary,{opacity:saving?0.7:1,padding:"14px",fontSize:16})},saving?"저장 중...":"예약 신청 완료")
+        ),
+        // 달력 + 안내 (모바일에서는 아래로)
+        React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:10,width:isMobile?"100%":"220px",maxWidth:isMobile?"100%":"220px"}},
+          !isMobile&&React.createElement(MiniCalendar,{reservations:reservations,selectedDate:form.date,onSelect:function(d){setF("date",d);checkDateConflict(d);}}),
+          React.createElement("div",{style:{background:"#fff8e1",border:"1px solid #ffe082",borderRadius:12,padding:"12px 14px"}},
+            React.createElement("p",{style:{fontSize:12,fontWeight:700,color:"#b87d00",margin:"0 0 6px"}},"⚠️ 예약 주의사항"),
+            React.createElement("p",{style:{fontSize:11,color:"#7a5c00",lineHeight:1.65,margin:0}},
+              "예약 취소는 이용일 ",React.createElement("strong",null,"최소 10일 전"),"까지 담당자에게 연락 바랍니다.",React.createElement("br"),
+              React.createElement("span",{style:{color:"#c0392b"}},"(법인명의로 패널티 부여되므로 꼭 연락주시기 바랍니다.)")
+            )
+          ),
+          React.createElement("div",{style:{background:"#f3f9ef",border:"1px solid #c8e0be",borderRadius:12,padding:"12px 14px"}},
+            React.createElement("p",{style:{fontSize:12,fontWeight:700,color:"#1a4a1a",margin:"0 0 8px"}},"⛳ 골프장별 예약 확정일",React.createElement("br"),React.createElement("span",{style:{fontSize:10,fontWeight:400,color:"#6a8e61"}},"(이용일 기준)")),
+            (function(){
+              var today3=new Date(), nm=(today3.getMonth()+2)>12?1:today3.getMonth()+2;
+              var ny=(today3.getMonth()+2)>12?today3.getFullYear()+1:today3.getFullYear();
+              var cm=nm-1<=0?12:nm-1, cy=nm-1<=0?ny-1:ny;
+              var tue=8; for(var d=8;d<=14;d++){if(new Date(cy,cm-1,d).getDay()===2){tue=d;break;}}
+              return [
+                ["코리아CC","#1a5c2e","#e8f5e0","전월 20일 확정","ex) "+nm+"/27 이용일, "+cm+"/20 확정"],
+                ["크리스탈밸리","#1a3a6e","#e3ecfa","전월 2주차 화요일 확정","ex) "+nm+"/27 이용일, "+cm+"/"+tue+" 확정"],
+                ["설해원","#8b1a1a","#faeaea","전월 1주차 내 확정","ex) "+nm+"/27 이용일, "+cm+"/7 확정"],
+              ].map(function(item){
+                return React.createElement("div",{key:item[0],style:{display:"flex",flexDirection:"column",background:item[2],borderRadius:8,padding:"6px 9px",marginBottom:5}},
+                  React.createElement("span",{style:{fontSize:11,fontWeight:700,color:item[1]}},item[0]),
+                  React.createElement("span",{style:{fontSize:11,color:"#444",marginTop:1}},item[3]),
+                  React.createElement("span",{style:{fontSize:10,color:"#888",marginTop:2}},item[4])
+                );
+              });
+            })()
+          ),
+          React.createElement("div",{style:{background:"#f0f4ff",border:"1px solid #c5cff5",borderRadius:12,padding:"12px 14px"}},
+            React.createElement("p",{style:{fontSize:12,fontWeight:700,color:"#1a2e6e",margin:"0 0 6px"}},"📞 문의처 / 담당자"),
+            React.createElement("p",{style:{fontSize:11,color:"#2a3a6e",lineHeight:1.7,margin:0}},
+              "HR ",React.createElement("strong",null,"홍미소"),React.createElement("br"),
+              React.createElement("a",{href:"mailto:miso.hong@sk.com",style:{color:"#1a3a6e",textDecoration:"none"}},"miso.hong@sk.com"),React.createElement("br"),
+              React.createElement("a",{href:"tel:010-2101-6313",style:{color:"#1a3a6e",textDecoration:"none",fontWeight:600}},"010-2101-6313")
             )
           )
-        ),
-        React.createElement("button",{onClick:handleSubmit,disabled:saving,style:Object.assign({},btnPrimary,{opacity:saving?0.7:1})},saving?"저장 중...":"예약 신청 완료")
+        )
       ),
-      // 달력 + 안내
-      React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:10,minWidth:200,maxWidth:220}},
-        React.createElement(MiniCalendar,{reservations:reservations,selectedDate:form.date,onSelect:function(d){setF("date",d);checkDateConflict(d);}}),
-        React.createElement("div",{style:{background:"#fff8e1",border:"1px solid #ffe082",borderRadius:12,padding:"12px 14px"}},
-          React.createElement("p",{style:{fontSize:12,fontWeight:700,color:"#b87d00",margin:"0 0 6px"}},"⚠️ 예약 주의사항"),
-          React.createElement("p",{style:{fontSize:11,color:"#7a5c00",lineHeight:1.65,margin:0}},
-            "예약 취소는 이용일 ",React.createElement("strong",null,"최소 10일 전"),"까지 담당자에게 연락 바랍니다.",React.createElement("br"),
-            React.createElement("span",{style:{color:"#c0392b"}},"(법인명의로 패널티 부여되므로 꼭 연락주시기 바랍니다.)")
-          )
-        ),
-        React.createElement("div",{style:{background:"#f3f9ef",border:"1px solid #c8e0be",borderRadius:12,padding:"12px 14px"}},
-          React.createElement("p",{style:{fontSize:12,fontWeight:700,color:"#1a4a1a",margin:"0 0 8px"}},"⛳ 골프장별 예약 확정일",React.createElement("br"),React.createElement("span",{style:{fontSize:10,fontWeight:400,color:"#6a8e61"}},"(이용일 기준)")),
-          (function(){
-            var today3=new Date(), nm=(today3.getMonth()+2)>12?1:today3.getMonth()+2;
-            var ny=(today3.getMonth()+2)>12?today3.getFullYear()+1:today3.getFullYear();
-            var cm=nm-1<=0?12:nm-1, cy=nm-1<=0?ny-1:ny;
-            var tue=8; for(var d=8;d<=14;d++){if(new Date(cy,cm-1,d).getDay()===2){tue=d;break;}}
-            return [
-              ["코리아CC","#1a5c2e","#e8f5e0","전월 20일 확정","ex) "+nm+"/27 이용일, "+cm+"/20 확정"],
-              ["크리스탈밸리","#1a3a6e","#e3ecfa","전월 2주차 화요일 확정","ex) "+nm+"/27 이용일, "+cm+"/"+tue+" 확정"],
-              ["설해원","#8b1a1a","#faeaea","전월 1주차 내 확정","ex) "+nm+"/27 이용일, "+cm+"/7 확정"],
-            ].map(function(item){
-              return React.createElement("div",{key:item[0],style:{display:"flex",flexDirection:"column",background:item[2],borderRadius:8,padding:"6px 9px",marginBottom:5}},
-                React.createElement("span",{style:{fontSize:11,fontWeight:700,color:item[1]}},item[0]),
-                React.createElement("span",{style:{fontSize:11,color:"#444",marginTop:1}},item[3]),
-                React.createElement("span",{style:{fontSize:10,color:"#888",marginTop:2}},item[4])
-              );
-            });
-          })()
-        ),
-        React.createElement("div",{style:{background:"#f0f4ff",border:"1px solid #c5cff5",borderRadius:12,padding:"12px 14px"}},
-          React.createElement("p",{style:{fontSize:12,fontWeight:700,color:"#1a2e6e",margin:"0 0 6px"}},"📞 문의처 / 담당자"),
-          React.createElement("p",{style:{fontSize:11,color:"#2a3a6e",lineHeight:1.7,margin:0}},
-            "HR ",React.createElement("strong",null,"홍미소"),React.createElement("br"),
-            React.createElement("a",{href:"mailto:miso.hong@sk.com",style:{color:"#1a3a6e",textDecoration:"none"}},"miso.hong@sk.com"),React.createElement("br"),
-            React.createElement("a",{href:"tel:010-2101-6313",style:{color:"#1a3a6e",textDecoration:"none",fontWeight:600}},"010-2101-6313")
-          )
+      // 팝업들
+      dateConflict&&React.createElement("div",{style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.35)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999},onClick:function(){setDateConflict(null);}},
+        React.createElement("div",{onClick:function(e){e.stopPropagation();},style:{background:"#fff",borderRadius:14,padding:"2rem 1.8rem",maxWidth:300,width:"90%",boxSizing:"border-box",border:"1px solid #ffe082",textAlign:"center"}},
+          React.createElement("div",{style:{fontSize:36,marginBottom:10}},"⚠️"),
+          React.createElement("h3",{style:{fontSize:15,fontWeight:700,color:"#b87d00",margin:"0 0 10px"}},"동일 날짜 신청 안내"),
+          React.createElement("p",{style:{fontSize:14,color:"#7a5c00",lineHeight:1.75,margin:"0 0 20px",background:"#fff8e1",borderRadius:9,padding:"12px 14px",border:"1px solid #ffe082"}},
+            "동일한 날짜에 ",React.createElement("strong",null,dateConflict),"명의 신청건이 있습니다."
+          ),
+          React.createElement("button",{onClick:function(){setDateConflict(null);},style:Object.assign({},btnPrimary,{width:"auto",padding:"10px 28px",background:"#e6a817"})},"확인")
+        )
+      ),
+      courseNotice&&React.createElement("div",{style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.35)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999},onClick:function(){setCourseNotice(null);}},
+        React.createElement("div",{onClick:function(e){e.stopPropagation();},style:{background:"#fff",borderRadius:14,padding:"2rem 1.8rem",maxWidth:320,width:"90%",boxSizing:"border-box",border:"1px solid #c8e0be",textAlign:"center"}},
+          React.createElement("div",{style:{fontSize:36,marginBottom:10}},"📋"),
+          React.createElement("h3",{style:{fontSize:16,fontWeight:700,color:"#1a4a1a",margin:"0 0 10px"}},courseNotice.title),
+          React.createElement("p",{style:{fontSize:14,color:"#4a6741",lineHeight:1.75,margin:"0 0 20px",background:"#f3f9ef",borderRadius:9,padding:"12px 14px",border:"1px solid #c8e0be"}},courseNotice.msg),
+          React.createElement("button",{onClick:function(){setCourseNotice(null);},style:Object.assign({},btnPrimary,{width:"auto",padding:"10px 32px"})},"확인")
         )
       )
-    ),
-    // 날짜 중복 팝업
-    dateConflict&&React.createElement("div",{style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.35)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999},onClick:function(){setDateConflict(null);}},
-      React.createElement("div",{onClick:function(e){e.stopPropagation();},style:{background:"#fff",borderRadius:14,padding:"2rem 1.8rem",maxWidth:300,width:"90%",boxSizing:"border-box",border:"1px solid #ffe082",textAlign:"center"}},
-        React.createElement("div",{style:{fontSize:36,marginBottom:10}},"⚠️"),
-        React.createElement("h3",{style:{fontSize:15,fontWeight:700,color:"#b87d00",margin:"0 0 10px"}},"동일 날짜 신청 안내"),
-        React.createElement("p",{style:{fontSize:14,color:"#7a5c00",lineHeight:1.75,margin:"0 0 20px",background:"#fff8e1",borderRadius:9,padding:"12px 14px",border:"1px solid #ffe082"}},
-          "동일한 날짜에 ",React.createElement("strong",null,dateConflict),"명의 신청건이 있습니다."
-        ),
-        React.createElement("button",{onClick:function(){setDateConflict(null);},style:Object.assign({},btnPrimary,{width:"auto",padding:"10px 28px",background:"#e6a817"})},"확인")
-      )
-    ),
-    // 골프장 팝업
-    courseNotice&&React.createElement("div",{style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.35)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999},onClick:function(){setCourseNotice(null);}},
-      React.createElement("div",{onClick:function(e){e.stopPropagation();},style:{background:"#fff",borderRadius:14,padding:"2rem 1.8rem",maxWidth:320,width:"90%",boxSizing:"border-box",border:"1px solid #c8e0be",textAlign:"center"}},
-        React.createElement("div",{style:{fontSize:36,marginBottom:10}},"📋"),
-        React.createElement("h3",{style:{fontSize:16,fontWeight:700,color:"#1a4a1a",margin:"0 0 10px"}},courseNotice.title),
-        React.createElement("p",{style:{fontSize:14,color:"#4a6741",lineHeight:1.75,margin:"0 0 20px",background:"#f3f9ef",borderRadius:9,padding:"12px 14px",border:"1px solid #c8e0be"}},courseNotice.msg),
-        React.createElement("button",{onClick:function(){setCourseNotice(null);},style:Object.assign({},btnPrimary,{width:"auto",padding:"10px 32px"})},"확인")
-      )
-    )
-  );
+    );
+  }
 
   // SUCCESS
   if(page==="success") return React.createElement("div",{style:{minHeight:400,display:"flex",alignItems:"center",justifyContent:"center",padding:"2rem 1rem"}},
@@ -532,6 +534,7 @@ function App() {
   // MY RESERVATION
   if(page==="myReservation") {
     var todayStr = new Date().toISOString().split("T")[0];
+    var isMobile2 = window.innerWidth < 600;
     var sorted = myRes.slice().sort(function(a,b){
       var da=String(a.date||"").replace(/^'/,"").substring(0,10);
       var db=String(b.date||"").replace(/^'/,"").substring(0,10);
@@ -543,9 +546,9 @@ function App() {
       if(!groups[key]) groups[key]={name:r.userEmpName||"-",dept:r.userDept||"",items:[]};
       groups[key].items.push(r);
     });
-    return React.createElement("div",{style:{maxWidth:680,margin:"0 auto",padding:"1.5rem 1rem"}},
+    return React.createElement("div",{style:{maxWidth:680,margin:"0 auto",padding:"1rem"}},
       React.createElement("button",{onClick:function(){setPage("home");setLookupEmpId("");setLookupName("");setLookupDept("");setLookupPw("");setMyRes(null);setLookupError("");},style:{background:"none",border:"none",color:"#2e6b2e",cursor:"pointer",fontSize:14,padding:0,marginBottom:16}},"← 홈으로"),
-      React.createElement("div",{style:{background:"#f3f9ef",border:"1px solid #c8e0be",borderRadius:12,padding:"1.2rem",marginBottom:16}},
+      React.createElement("div",{style:{background:"#f3f9ef",border:"1px solid #c8e0be",borderRadius:12,padding:"1rem",marginBottom:16}},
         React.createElement("div",{style:{display:"flex",alignItems:"center",gap:10}},
           React.createElement("div",{style:{width:40,height:40,borderRadius:"50%",background:"#d4ead4",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,fontWeight:700,color:"#2e6b2e"}},lookupName.slice(0,1)),
           React.createElement("div",null,
@@ -563,38 +566,67 @@ function App() {
             group.dept&&React.createElement("span",{style:{fontSize:12,color:"#6a8e61"}},"("+group.dept+")"),
             React.createElement("span",{style:{marginLeft:"auto",fontSize:12,color:"#6a8e61",background:"#fff",padding:"2px 10px",borderRadius:20,border:"1px solid #c8d8f0"}},group.items.length+"건")
           ),
-          React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr 0.8fr 1.2fr 0.9fr",background:"#c8e0be",padding:"8px 16px",gap:8}},
-            ["골프장","이용일","시간","진행상태",""].map(function(h,i){return React.createElement("div",{key:i,style:{fontSize:11,fontWeight:700,color:"#2e6b2e",textAlign:"center"}},h);})
-          ),
-          group.items.map(function(r,i){
-            var rDate=String(r.date||"").replace(/^'/,"").substring(0,10);
-            var isPast = rDate < todayStr;
-            return React.createElement("div",{key:r.id,style:{display:"grid",gridTemplateColumns:"1fr 1fr 0.8fr 1.2fr 0.9fr",padding:"10px 16px",gap:8,
-              borderTop:i===0?"none":"1px solid #e8f0e4",
-              background:r.status==="confirmed"?"#f3fdf5":r.status==="cancelled"?"#fff8f8":r.status==="cancel_request"?"#fdf3ff":"#fff",
-              boxShadow:r.status==="confirmed"?"inset 3px 0 0 #1a6e3a":r.status==="cancelled"?"inset 3px 0 0 #e53935":r.status==="cancel_request"?"inset 3px 0 0 #7b1fa2":"none"}},
-              React.createElement("div",{style:{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2}},
-                React.createElement("span",{style:{fontSize:12,fontWeight:600,padding:"2px 10px",borderRadius:10,background:COURSE_BG[r.course],color:COURSE_COLORS[r.course]}},r.course),
-                r.course_detail&&React.createElement("span",{style:{fontSize:10,color:"#6a8e61"}},r.course_detail)
-              ),
-              React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"center"}},React.createElement("span",{style:{fontSize:12,color:"#1a2e1a",fontWeight:600}},rDate)),
-              React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"center"}},React.createElement("span",{style:{fontSize:12,color:"#1a2e1a",fontWeight:600}},r.time)),
-              React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"center"}},
-                React.createElement("span",{style:{fontSize:11,fontWeight:700,padding:"3px 10px",borderRadius:20,
-                  background:STATUS[r.status]?STATUS[r.status].bg:"#eee",
-                  color:STATUS[r.status]?STATUS[r.status].color:"#333",
-                  border:"1.5px solid "+(STATUS[r.status]?STATUS[r.status].color:"#ccc"),
-                  boxShadow:r.status==="confirmed"?"0 0 6px rgba(26,110,58,0.25)":"none"}},
-                  r.status==="confirmed"?"✅ 확정":r.status==="cancelled"?"❌ 취소":r.status==="cancel_request"?"🔔 취소요청":"⏳ 대기중"
-                )
-              ),
-              React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"center"}},
+          // 모바일: 카드형 / PC: 테이블형
+          isMobile2 ?
+            group.items.map(function(r,i){
+              var rDate=String(r.date||"").replace(/^'/,"").substring(0,10);
+              var isPast = rDate < todayStr;
+              return React.createElement("div",{key:r.id,style:{padding:"12px 16px",borderTop:i===0?"none":"1px solid #e8f0e4",
+                background:r.status==="confirmed"?"#f3fdf5":r.status==="cancelled"?"#fff8f8":r.status==="cancel_request"?"#fdf3ff":"#fff",
+                borderLeft:"3px solid "+(r.status==="confirmed"?"#1a6e3a":r.status==="cancelled"?"#e53935":r.status==="cancel_request"?"#7b1fa2":"transparent")}},
+                React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}},
+                  React.createElement("span",{style:{fontSize:13,fontWeight:600,padding:"3px 10px",borderRadius:10,background:COURSE_BG[r.course],color:COURSE_COLORS[r.course]}},r.course),
+                  React.createElement("span",{style:{fontSize:12,fontWeight:700,padding:"3px 10px",borderRadius:20,
+                    background:STATUS[r.status]?STATUS[r.status].bg:"#eee",
+                    color:STATUS[r.status]?STATUS[r.status].color:"#333",
+                    border:"1.5px solid "+(STATUS[r.status]?STATUS[r.status].color:"#ccc")}},
+                    r.status==="confirmed"?"✅ 확정":r.status==="cancelled"?"❌ 취소":r.status==="cancel_request"?"🔔 취소요청":"⏳ 대기중"
+                  )
+                ),
+                r.course_detail&&React.createElement("p",{style:{fontSize:11,color:"#6a8e61",margin:"0 0 6px"}},"📍 "+r.course_detail),
+                React.createElement("div",{style:{display:"flex",gap:16,fontSize:13,color:"#1a2e1a",fontWeight:600,marginBottom:8}},
+                  React.createElement("span",null,"📅 "+rDate),
+                  React.createElement("span",null,"🕐 "+r.time)
+                ),
+                r.note&&React.createElement("p",{style:{fontSize:12,color:"#7a9e71",background:"#f3f9ef",borderRadius:6,padding:"5px 9px",margin:"0 0 8px"}},"📝 "+r.note),
                 (r.status==="pending"||(r.status==="confirmed"&&!isPast))&&
-                React.createElement("button",{onClick:function(){requestCancel(r.id);},style:{padding:"3px 8px",background:"#f3e5f5",color:"#7b1fa2",border:"1px solid #ce93d8",borderRadius:6,fontSize:11,cursor:"pointer"}},"취소요청")
-              )
-            );
-          }),
-          group.items.some(function(r){return r.note;})&&React.createElement("div",{style:{padding:"8px 16px",borderTop:"1px solid #e8f0e4",background:"#fafff8"}},
+                React.createElement("button",{onClick:function(){requestCancel(r.id);},style:{padding:"6px 14px",background:"#f3e5f5",color:"#7b1fa2",border:"1px solid #ce93d8",borderRadius:6,fontSize:12,cursor:"pointer"}},"취소요청")
+              );
+            }) :
+            React.createElement(React.Fragment, null,
+              React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr 0.8fr 1.2fr 0.9fr",background:"#c8e0be",padding:"8px 16px",gap:8}},
+                ["골프장","이용일","시간","진행상태",""].map(function(h,i){return React.createElement("div",{key:i,style:{fontSize:11,fontWeight:700,color:"#2e6b2e",textAlign:"center"}},h);})
+              ),
+              group.items.map(function(r,i){
+                var rDate=String(r.date||"").replace(/^'/,"").substring(0,10);
+                var isPast = rDate < todayStr;
+                return React.createElement("div",{key:r.id,style:{display:"grid",gridTemplateColumns:"1fr 1fr 0.8fr 1.2fr 0.9fr",padding:"10px 16px",gap:8,
+                  borderTop:i===0?"none":"1px solid #e8f0e4",
+                  background:r.status==="confirmed"?"#f3fdf5":r.status==="cancelled"?"#fff8f8":r.status==="cancel_request"?"#fdf3ff":"#fff",
+                  boxShadow:r.status==="confirmed"?"inset 3px 0 0 #1a6e3a":r.status==="cancelled"?"inset 3px 0 0 #e53935":r.status==="cancel_request"?"inset 3px 0 0 #7b1fa2":"none"}},
+                  React.createElement("div",{style:{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2}},
+                    React.createElement("span",{style:{fontSize:12,fontWeight:600,padding:"2px 10px",borderRadius:10,background:COURSE_BG[r.course],color:COURSE_COLORS[r.course]}},r.course),
+                    r.course_detail&&React.createElement("span",{style:{fontSize:10,color:"#6a8e61"}},r.course_detail)
+                  ),
+                  React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"center"}},React.createElement("span",{style:{fontSize:12,color:"#1a2e1a",fontWeight:600}},rDate)),
+                  React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"center"}},React.createElement("span",{style:{fontSize:12,color:"#1a2e1a",fontWeight:600}},r.time)),
+                  React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"center"}},
+                    React.createElement("span",{style:{fontSize:11,fontWeight:700,padding:"3px 10px",borderRadius:20,
+                      background:STATUS[r.status]?STATUS[r.status].bg:"#eee",
+                      color:STATUS[r.status]?STATUS[r.status].color:"#333",
+                      border:"1.5px solid "+(STATUS[r.status]?STATUS[r.status].color:"#ccc"),
+                      boxShadow:r.status==="confirmed"?"0 0 6px rgba(26,110,58,0.25)":"none"}},
+                      r.status==="confirmed"?"✅ 확정":r.status==="cancelled"?"❌ 취소":r.status==="cancel_request"?"🔔 취소요청":"⏳ 대기중"
+                    )
+                  ),
+                  React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"center"}},
+                    (r.status==="pending"||(r.status==="confirmed"&&!isPast))&&
+                    React.createElement("button",{onClick:function(){requestCancel(r.id);},style:{padding:"3px 8px",background:"#f3e5f5",color:"#7b1fa2",border:"1px solid #ce93d8",borderRadius:6,fontSize:11,cursor:"pointer"}},"취소요청")
+                  )
+                );
+              })
+            ),
+          group.items.some(function(r){return r.note&&!isMobile2;})&&React.createElement("div",{style:{padding:"8px 16px",borderTop:"1px solid #e8f0e4",background:"#fafff8"}},
             group.items.filter(function(r){return r.note;}).map(function(r){
               return React.createElement("div",{key:r.id,style:{fontSize:11,color:"#4a6741",marginBottom:3}},
                 "📝 ",React.createElement("strong",null,String(r.date||"").replace(/^'/,"").substring(0,10))," — ",r.note
