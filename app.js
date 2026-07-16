@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbzXv4QEspjzRYR9R4CKlpFzaRt8D_yRWWuteGG6N06LTyZppgKjR6EiZhyG81j2eCVW/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzvgMaZkhDM5EdRJ98iI6-kwF7FJXM28C6Qx-dSX3vC5wYLaoZw4OUk0i5ZywU0v0pT/exec";
 const ADMIN_PASSWORD = "golf1234";
 const COURSES = ["코리아", "크리스탈밸리", "설해원"];
 const COURSE_COLORS = { "코리아": "#1a5c2e", "크리스탈밸리": "#1a3a6e", "설해원": "#8b1a1a" };
@@ -338,7 +338,7 @@ function App() {
         React.createElement("h2", {style:{fontSize:18,fontWeight:700,color:"#1a4a1a",margin:"0 0 1rem"}}, "⛳ 예약 신청"),
         // 신청자
         React.createElement("div", {style:{background:"#eaf4e4",border:"1px solid #b8d8a8",borderRadius:9,padding:"12px",marginBottom:12}},
-          React.createElement("p", {style:{fontSize:12,fontWeight:700,color:"#2e6b2e",margin:"0 0 8px"}}, "👤 신청자 "),
+          React.createElement("p", {style:{fontSize:12,fontWeight:700,color:"#2e6b2e",margin:"0 0 8px"}}, "👤 신청자 (비서)"),
           React.createElement("label", {style:labelStyle}, "사번"),
           React.createElement("input", {type:"text",placeholder:"사번 입력 시 자동 조회",value:form.empId,onChange:function(e){setF("empId",e.target.value);},onBlur:function(){fetchEmployee(form.empId,"applicant");},onKeyDown:function(e){if(e.key==="Enter")fetchEmployee(form.empId,"applicant");},style:inputStyle(errors.empId)}),
           errors.empId&&React.createElement("p",{style:errStyle},errors.empId),
