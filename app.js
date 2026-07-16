@@ -167,7 +167,13 @@ function App() {
 
   React.useEffect(function() {
     if(!form.empId.trim()) { setForm(function(f){ var o={};Object.assign(o,f);o.name="";o.dept="";return o; }); return; }
-    var t = setTimeout(function(){ fetchEmployee(form.empId,"applicant"); }, 800);
+    var t = setTimeout(function(){
+      fetchEmployee(form.empId,"applicant");
+      // 30으로 시작하는 사번이면 이용자에도 동일하게 자동 셋팅
+      if(form.empId.startsWith("30")) {
+        setForm(function(f){ var o={};Object.assign(o,f);o.userEmpId=form.empId;return o; });
+      }
+    }, 800);
     return function(){ clearTimeout(t); };
   }, [form.empId]);
 
@@ -338,7 +344,7 @@ function App() {
         React.createElement("h2", {style:{fontSize:18,fontWeight:700,color:"#1a4a1a",margin:"0 0 1rem"}}, "⛳ 예약 신청"),
         // 신청자
         React.createElement("div", {style:{background:"#eaf4e4",border:"1px solid #b8d8a8",borderRadius:9,padding:"12px",marginBottom:12}},
-          React.createElement("p", {style:{fontSize:12,fontWeight:700,color:"#2e6b2e",margin:"0 0 8px"}}, "👤 신청자 (비서)"),
+          React.createElement("p", {style:{fontSize:12,fontWeight:700,color:"#2e6b2e",margin:"0 0 8px"}}, "👤 신청자"),
           React.createElement("label", {style:labelStyle}, "사번"),
           React.createElement("input", {type:"text",placeholder:"사번 입력 시 자동 조회",value:form.empId,onChange:function(e){setF("empId",e.target.value);},onBlur:function(){fetchEmployee(form.empId,"applicant");},onKeyDown:function(e){if(e.key==="Enter")fetchEmployee(form.empId,"applicant");},style:inputStyle(errors.empId)}),
           errors.empId&&React.createElement("p",{style:errStyle},errors.empId),
