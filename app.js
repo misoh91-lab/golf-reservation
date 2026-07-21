@@ -1,7 +1,7 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbzvgMaZkhDM5EdRJ98iI6-kwF7FJXM28C6Qx-dSX3vC5wYLaoZw4OUk0i5ZywU0v0pT/exec";
 const ADMIN_PASSWORD = "golf1234";
 const COURSES = ["코리아", "크리스탈밸리", "설해원"];
-const COURSE_COLORS = { "코리아": "#1a5c2e", "크리스탈밸리": "#1a3a6e", "설해원": "#8b1a1a" };
+const COURSE_COLORS = { "코리아": "#1a7a3a", "크리스탈밸리": "#1565c0", "설해원": "#c62828" };
 const COURSE_BG = { "코리아": "#e8f5e0", "크리스탈밸리": "#e3ecfa", "설해원": "#faeaea" };
 const COURSE_URLS = {
   "코리아": "https://www.gakorea.com/index.asp",
