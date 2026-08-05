@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbxb-y2X0H0VDmuykBGEvnwvnTYOlfd3FafsRuvh36xB14YqsmKGm5NgZB7ng1M_IYBy/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbweHInWGQUmZEfuGIt55spF85vb78uZWH6ani_hz6dvqFSVmfhd7gqGdiYLX5BBySk/exec";
 const ADMIN_PASSWORD = "golf1234";
 const COURSES = ["코리아", "크리스탈밸리", "설해원"];
 const COURSE_COLORS = { "코리아": "#1a7a3a", "크리스탈밸리": "#1565c0", "설해원": "#c62828" };
